@@ -362,12 +362,19 @@
     .avatar {
       width: 48px; height: 48px; border-radius: 16px;
       display: inline-flex; align-items: center; justify-content: center;
+      overflow: hidden;
       background: linear-gradient(135deg, rgba(124,140,255,.24), rgba(124,244,212,.18));
       border: 1px solid rgba(255,255,255,.1);
       color: #fff;
       font-weight: 800;
       font-size: 18px;
       flex: 0 0 auto;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
     .staff-info { min-width: 0; }
     .staff-info h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -548,10 +555,10 @@
       <div class="container hero-grid">
         <article class="hero-card glass reveal">
           <div class="eyebrow"><i></i> G1yrex's Hub • smooth premium layout</div>
-          <h1><span class="gradient">A clean, modern hub</span> for your community.</h1>
+          <h1><span class="gradient">A clean, modern hub</span> for G1yrex's community.</h1>
           <p class="subtext">
-            Home is designed to feel premium and simple, while Staff, Smp, Ranks, and About each stay separate
-            with their own information. No extra photos, no clutter, just a smooth layout built for Railway.
+            Home is designed to feel premium and simple. Staff, Smp, Ranks, and About each stay separate
+            with their own information. No extra photos, no clutter, just a smooth layout.
           </p>
 
           <div class="hero-actions">
@@ -565,8 +572,8 @@
               <span>Dark glass UI, soft glows, and subtle motion.</span>
             </div>
             <div class="mini-card">
-              <strong>Live Staff</strong>
-              <span>Loads directly from your Railway API.</span>
+              <strong>Live Discord Staff</strong>
+              <span>Loads directly from Discord server.</span>
             </div>
             <div class="mini-card">
               <strong>Separate Sections</strong>
@@ -587,7 +594,7 @@
           <div class="stack">
             <div>
               <div class="eyebrow"><i></i> Official links</div>
-              <h2 style="margin-top:14px;">Your platforms in one place</h2>
+              <h2 style="margin-top:14px;">G1yrex All Platforms At One Place</h2>
               <p class="lead">Quick access to G1yrex's official pages and the Discord hub.</p>
             </div>
 
@@ -642,7 +649,7 @@
         <div class="section-head reveal">
           <div>
             <h2>Staff</h2>
-            <p class="lead">Use <strong>/staff set</strong> with <strong>role/member</strong> to add live staff. This section is fully separate and loads the current list from Railway.</p>
+            <p class="lead">Live Discord staff appears here in separate cards. The section stays clean and premium for your hub.</p>
           </div>
           <div class="tag"><span class="dot"></span> Live API</div>
         </div>
@@ -650,10 +657,10 @@
         <div class="panel reveal">
           <div class="staff-toolbar">
             <div>
-              <strong>Live staff roster</strong>
-              <div class="small" id="staffStatus">Loading staff from Railway…</div>
+              <strong>Live Discord staff roster</strong>
+              <div class="small" id="staffStatus">Loading staff from Discord…</div>
             </div>
-            <div class="tag"><span class="dot"></span> /staff set role/member</div>
+            <div class="tag"><span class="dot"></span> Discord source</div>
           </div>
 
           <div class="staff-grid" id="staffGrid">
@@ -701,7 +708,7 @@
         <div class="section-head reveal">
           <div>
             <h2>Ranks</h2>
-            <p class="lead">Ranks are also separate and marked <strong>Coming Soon</strong>. You can fill this with perks, tier cards, and premium rank details later.</p>
+            <p class="lead">Ranks are separate and marked <strong>Coming Soon</strong>.</p>
           </div>
           <div class="tag"><span class="dot"></span> Coming soon</div>
         </div>
@@ -710,19 +717,19 @@
           <article class="coming-card reveal">
             <div class="coming-pill">Coming Soon</div>
             <h3>Rank Shop</h3>
-            <p>Premium rank cards, purchase info, and feature summaries can be placed here when ready.</p>
+            <p>Placeholder for future rank content.</p>
             <div class="coming-bar"><span style="width:70%"></span></div>
           </article>
           <article class="coming-card reveal">
             <div class="coming-pill">Coming Soon</div>
             <h3>Tier Showcase</h3>
-            <p>Show player tiers and the value of each rank in a clean, premium style.</p>
+            <p>Future rank cards can be displayed here.</p>
             <div class="coming-bar"><span style="width:56%"></span></div>
           </article>
           <article class="coming-card reveal">
             <div class="coming-pill">Coming Soon</div>
             <h3>Perks Preview</h3>
-            <p>Permissions, cosmetics, and bonuses can be listed here in the future.</p>
+            <p>Reserved for later rank updates.</p>
             <div class="coming-bar"><span style="width:82%"></span></div>
           </article>
         </div>
@@ -743,8 +750,7 @@
           <article class="about-box reveal">
             <h3>G1yrex's Hub</h3>
             <p class="lead" style="margin-top:12px;">
-              The official premium hub for your Minecraft community. It is designed to show your staff live,
-              keep the layout smooth, and make the website easy to navigate on both mobile and desktop.
+              The official premium hub for your Minecraft community. It keeps the layout smooth and makes the website easy to navigate on both mobile and desktop.
             </p>
 
             <div class="info-list">
@@ -759,14 +765,14 @@
                 <div class="icon">✧</div>
                 <div>
                   <strong>Live Staff System</strong>
-                  <div class="small">The website reads staff data from your Railway API.</div>
+                  <div class="small">Live staff system from Discord server.</div>
                 </div>
               </div>
               <div class="info-item">
                 <div class="icon">◌</div>
                 <div>
-                  <strong>Future Ready</strong>
-                  <div class="small">SMP and Ranks sections are ready for future content.</div>
+                  <strong>Ready for Updates</strong>
+                  <div class="small">SMP and Ranks sections can be expanded later.</div>
                 </div>
               </div>
             </div>
@@ -786,7 +792,7 @@
               </div>
               <div class="info-item">
                 <div class="icon">3</div>
-                <div><strong>Custom Content</strong><div class="small">Replace this text whenever you want a new update.</div></div>
+                <div><strong>Custom Content</strong><div class="small">Have Fun.</div></div>
               </div>
             </div>
           </article>
@@ -841,10 +847,14 @@
     }
 
     function staffCard(entry) {
+      const avatar = entry.avatarUrl
+        ? `<img src="${escapeHtml(entry.avatarUrl)}" alt="${escapeHtml(entry.name)}">`
+        : escapeHtml(initial(entry.name));
+
       return `
         <article class="staff-card">
           <div class="staff-top">
-            <div class="avatar">${escapeHtml(initial(entry.name))}</div>
+            <div class="avatar">${avatar}</div>
             <div class="staff-info">
               <h3>${escapeHtml(entry.name)}</h3>
               <div class="role">${escapeHtml(entry.roleLabel || entry.kind)}</div>
@@ -859,7 +869,7 @@
     }
 
     async function loadStaff() {
-      staffStatus.textContent = 'Loading staff from Railway…';
+      staffStatus.textContent = 'Loading staff from Discord…';
       try {
         const res = await fetch('/api/staff', { cache: 'no-store' });
         if (!res.ok) throw new Error('Bad response');
@@ -867,7 +877,7 @@
         const items = Array.isArray(data.staff) ? data.staff : [];
 
         if (!items.length) {
-          staffGrid.innerHTML = `<div class="empty">No staff has been set yet. Use /staff set with a role or member, then refresh this page.</div>`;
+          staffGrid.innerHTML = `<div class="empty">No staff has been set yet. Add a role or member in Discord, then refresh this page.</div>`;
           staffStatus.textContent = 'No staff entries found yet.';
           return;
         }
@@ -875,7 +885,7 @@
         staffGrid.innerHTML = items.map(staffCard).join('');
         staffStatus.textContent = `${items.length} staff member(s) loaded successfully.`;
       } catch (err) {
-        staffGrid.innerHTML = `<div class="empty">Could not load staff right now. Make sure the Railway app is running and /api/staff is available.</div>`;
+        staffGrid.innerHTML = `<div class="empty">Could not load staff right now. Make sure the server is running and the staff API is available.</div>`;
         staffStatus.textContent = 'Live staff load failed.';
       }
     }
