@@ -28,7 +28,8 @@ if (!TOKEN || !CLIENT_ID) {
 }
 
 const BOT_NAME = "G1yrex Support";
-const CONFIG_PATH = path.join(__dirname, "ticket-config.json");
+const DATA_DIR = fs.existsSync("/data") ? "/data" : __dirname;
+const CONFIG_PATH = path.join(DATA_DIR, "ticket-config.json");
 
 const defaultConfig = {
   guilds: {},
