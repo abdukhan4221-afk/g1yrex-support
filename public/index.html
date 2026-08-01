@@ -534,6 +534,108 @@
   font-size: 13px;
   line-height: 1.6;
 }
+.rank-card { cursor: pointer; }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(3, 5, 12, 0.72);
+  backdrop-filter: blur(6px);
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  width: min(460px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: var(--radius);
+  padding: 26px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  position: relative;
+  animation: modalIn .22s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-close:hover { background: rgba(255,255,255,.12); }
+.modal-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  padding-right: 30px;
+}
+.modal-price {
+  color: #dffcf5;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.modal-steps {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.modal-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.modal-step .num {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #05070d;
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-step div.step-text strong { display: block; font-size: 14px; margin-bottom: 2px; }
+.modal-step div.step-text span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.modal-warning {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,123,149,.08);
+  border: 1px solid rgba(255,123,149,.22);
+  color: #ffd7de;
+  font-size: 13px;
+  line-height: 1.55;
+  margin-bottom: 18px;
+}
+.modal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
     .about-grid {
       display: grid;
@@ -806,7 +908,7 @@
     </div>
 
     <div class="rank-grid">
-      <article class="rank-card reveal">
+      <article class="rank-card reveal" data-rank="🏆 Elite" data-price="300 PKR 💵">
         <div class="rank-top">
           <div class="rank-name"><span class="rank-emoji">🏆</span> Elite</div>
           <div class="price">300 PKR 💵</div>
@@ -820,7 +922,7 @@
         <div class="rank-note">A strong starter premium tier for players who want style, perks, and a clean identity in the server.</div>
       </article>
 
-      <article class="rank-card reveal">
+      <article class="rank-card reveal" data-rank="👑 Elite+" data-price="500 PKR 💵">
         <div class="rank-top">
           <div class="rank-name"><span class="rank-emoji">👑</span> Elite+</div>
           <div class="price">500 PKR 💵</div>
@@ -835,7 +937,7 @@
         <div class="rank-note">A boosted premium option with extra weekly in-game value and stronger Discord presence.</div>
       </article>
 
-      <article class="rank-card reveal">
+      <article class="rank-card reveal" data-rank="🏰 Apex" data-price="750 PKR 💵">
         <div class="rank-top">
           <div class="rank-name"><span class="rank-emoji">🏰</span> Apex</div>
           <div class="price">750 PKR 💵</div>
@@ -942,6 +1044,47 @@
         </footer>
       </div>
     </div>
+
+    <div class="modal-overlay" id="rankModal" aria-hidden="true">
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="rankModalTitle">
+        <button class="modal-close" id="rankModalClose" aria-label="Close">✕</button>
+        <div class="modal-rank" id="rankModalTitle">Rank</div>
+        <div class="modal-price" id="rankModalPrice"></div>
+
+        <div class="modal-steps">
+          <div class="modal-step">
+            <div class="num">1</div>
+            <div class="step-text">
+              <strong>Join G1yrex Hub Discord</strong>
+              <span>Join the official Discord server to get started.</span>
+            </div>
+          </div>
+          <div class="modal-step">
+            <div class="num">2</div>
+            <div class="step-text">
+              <strong>Make Support Ticket</strong>
+              <span>Open a ticket in the support channel for your purchase.</span>
+            </div>
+          </div>
+          <div class="modal-step">
+            <div class="num">3</div>
+            <div class="step-text">
+              <strong>Mention G1yrexMC</strong>
+              <span>Don't pay or talk with anyone else for rank purchase.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-warning">
+          ⚠️ Only purchase ranks through official tickets and G1yrexMC. Never pay or share details with anyone else claiming to sell ranks.
+        </div>
+
+        <div class="modal-actions">
+          <a class="btn primary" href="https://discord.com/invite/ZRqHVHWfZY" target="_blank" rel="noreferrer">Join Discord</a>
+          <button class="btn secondary" id="rankModalCancel" type="button">Close</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -1009,6 +1152,41 @@
     }
 
     loadStaff();
+
+    const rankModal = document.getElementById('rankModal');
+    const rankModalTitle = document.getElementById('rankModalTitle');
+    const rankModalPrice = document.getElementById('rankModalPrice');
+    const rankModalClose = document.getElementById('rankModalClose');
+    const rankModalCancel = document.getElementById('rankModalCancel');
+
+    function openRankModal(rankName, rankPrice) {
+      rankModalTitle.textContent = rankName || 'Rank';
+      rankModalPrice.textContent = rankPrice || '';
+      rankModal.classList.add('open');
+      rankModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeRankModal() {
+      rankModal.classList.remove('open');
+      rankModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.rank-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        openRankModal(card.dataset.rank, card.dataset.price);
+      });
+    });
+
+    rankModalClose.addEventListener('click', closeRankModal);
+    rankModalCancel.addEventListener('click', closeRankModal);
+    rankModal.addEventListener('click', (e) => {
+      if (e.target === rankModal) closeRankModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && rankModal.classList.contains('open')) closeRankModal();
+    });
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
