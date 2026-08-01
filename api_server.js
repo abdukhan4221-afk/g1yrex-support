@@ -1008,13 +1008,15 @@ client.on("interactionCreate", async (interaction) => {
 const app = express();
 app.disable("x-powered-by");
 app.use(express.json());
-app.use(express.static(__dirname, {
+const PUBLIC_DIR = path.join(__dirname, "public");
+
+app.use(express.static(PUBLIC_DIR, {
   extensions: ["html"],
   maxAge: "5m",
 }));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
 });
 
 app.get("/api/staff", async (req, res) => {
