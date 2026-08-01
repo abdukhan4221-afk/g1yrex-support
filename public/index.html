@@ -1107,6 +1107,13 @@
       return clean ? clean[0].toUpperCase() : '?';
     }
 
+    function statusColor(status) {
+      if (status === 'online') return '#57f287';
+      if (status === 'idle') return '#fee75c';
+      if (status === 'dnd') return '#ed4245';
+      return '#747f8d';
+    }
+
     function staffCard(entry) {
       const avatar = entry.avatarUrl
         ? `<img src="${escapeHtml(entry.avatarUrl)}" alt="${escapeHtml(entry.name)}">`
@@ -1115,7 +1122,10 @@
       return `
         <article class="staff-card">
           <div class="staff-top">
-            <div class="avatar">${avatar}</div>
+            <div class="avatar" style="position:relative;">
+              ${avatar}
+              <span title="${escapeHtml(entry.status || 'online')}" style="position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:999px;background:${statusColor(entry.status)};border:2px solid #0b1020;"></span>
+            </div>
             <div class="staff-info">
               <h3>${escapeHtml(entry.name)}</h3>
               <div class="role">${escapeHtml(entry.roleLabel || entry.kind)}</div>
@@ -1138,8 +1148,8 @@
         const items = Array.isArray(data.staff) ? data.staff : [];
 
         if (!items.length) {
-          staffGrid.innerHTML = `<div class="empty">No staff has been set yet. Add a role or member in Discord, then refresh this page.</div>`;
-          staffStatus.textContent = 'No staff entries found yet.';
+          staffGrid.innerHTML = `<div class="empty">No staff is online right now. Check back soon!</div>`;
+          staffStatus.textContent = 'No staff online at the moment.';
           return;
         }
 
