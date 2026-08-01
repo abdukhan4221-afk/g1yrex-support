@@ -396,105 +396,6 @@
       font-size: 13px;
       line-height: 1.6;
     }
-    .staff-card { cursor: default; }
-    .staff-avatar { position: relative; }
-    .status-dot {
-      position: absolute;
-      right: -4px;
-      bottom: -4px;
-      width: 14px;
-      height: 14px;
-      border-radius: 999px;
-      border: 2px solid rgba(5,7,13,.92);
-      background: #57f287;
-      box-shadow: 0 0 0 6px rgba(87,242,135,.12);
-    }
-    .status-dot.idle { background: #fee75c; box-shadow: 0 0 0 6px rgba(254,231,92,.12); }
-    .status-dot.dnd { background: #ed4245; box-shadow: 0 0 0 6px rgba(237,66,69,.12); }
-    .status-dot.offline { background: #8e95a5; box-shadow: 0 0 0 6px rgba(142,149,165,.12); }
-
-    .rank-card {
-      cursor: pointer;
-    }
-    .rank-card:focus-visible {
-      outline: 2px solid rgba(124,140,255,.8);
-      outline-offset: 4px;
-    }
-    .rank-card:active {
-      transform: translateY(0);
-    }
-
-    .rank-modal {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: rgba(2, 4, 10, .72);
-      backdrop-filter: blur(18px);
-      z-index: 90;
-    }
-    .rank-modal.open {
-      display: flex;
-    }
-    .rank-modal-card {
-      width: min(620px, 100%);
-      border-radius: 28px;
-      padding: 24px;
-      background: rgba(12, 16, 29, .95);
-      border: 1px solid rgba(255,255,255,.09);
-      box-shadow: 0 24px 80px rgba(0,0,0,.52);
-    }
-    .rank-modal-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .modal-close {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      color: #fff;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    .modal-close:hover {
-      background: rgba(255,255,255,.09);
-    }
-    .rank-modal-body {
-      margin-top: 18px;
-      display: grid;
-      gap: 12px;
-    }
-    .premium-step {
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
-    }
-    .premium-step .num {
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #08111f;
-      font-weight: 900;
-      flex: 0 0 auto;
-    }
-    .premium-step strong {
-      display: block;
-      margin-bottom: 2px;
-    }
     .empty {
       padding: 20px;
       border-radius: 18px;
@@ -847,10 +748,10 @@
         <div class="panel reveal">
           <div class="staff-toolbar">
             <div>
-              <strong>Live Discord staff</strong>
-              <div class="small" id="staffStatus">Loading live staff from Discord…</div>
+              <strong>Live Discord staff roster</strong>
+              <div class="small" id="staffStatus">Loading staff from Discord…</div>
             </div>
-            <div class="tag"><span class="dot"></span> Live Discord</div>
+            <div class="tag"><span class="dot"></span> Discord source</div>
           </div>
 
           <div class="staff-grid" id="staffGrid">
@@ -905,7 +806,7 @@
     </div>
 
     <div class="rank-grid">
-      <article class="rank-card reveal" tabindex="0" role="button" aria-label="Open rank purchase popup" data-rank="Elite">
+      <article class="rank-card reveal">
         <div class="rank-top">
           <div class="rank-name"><span class="rank-emoji">🏆</span> Elite</div>
           <div class="price">300 PKR 💵</div>
@@ -919,7 +820,7 @@
         <div class="rank-note">A strong starter premium tier for players who want style, perks, and a clean identity in the server.</div>
       </article>
 
-      <article class="rank-card reveal" tabindex="0" role="button" aria-label="Open rank purchase popup" data-rank="Elite+">
+      <article class="rank-card reveal">
         <div class="rank-top">
           <div class="rank-name"><span class="rank-emoji">👑</span> Elite+</div>
           <div class="price">500 PKR 💵</div>
@@ -934,7 +835,7 @@
         <div class="rank-note">A boosted premium option with extra weekly in-game value and stronger Discord presence.</div>
       </article>
 
-      <article class="rank-card reveal" tabindex="0" role="button" aria-label="Open rank purchase popup" data-rank="Apex">
+      <article class="rank-card reveal">
         <div class="rank-top">
           <div class="rank-name"><span class="rank-emoji">🏰</span> Apex</div>
           <div class="price">750 PKR 💵</div>
@@ -982,7 +883,7 @@
                 <div class="icon">✧</div>
                 <div>
                   <strong>Live Staff System</strong>
-                  <div class="small">Live staff system from discord server.</div>
+                  <div class="small">Live staff system from Discord server.</div>
                 </div>
               </div>
               <div class="info-item">
@@ -997,7 +898,7 @@
 
           <article class="about-box reveal">
             <h3>Server Notes</h3>
-            <p class="lead" style="margin-top:12px;">Have Fun.</p>
+            <p class="lead" style="margin-top:12px;">Use this space for your Discord server description, community rules, announcements, or other official information.</p>
             <div class="info-list">
               <div class="info-item">
                 <div class="icon">1</div>
@@ -1067,31 +968,26 @@
       const avatar = entry.avatarUrl
         ? `<img src="${escapeHtml(entry.avatarUrl)}" alt="${escapeHtml(entry.name)}">`
         : escapeHtml(initial(entry.name));
-      const status = entry.statusLabel || 'Online';
-      const roleLabel = entry.roleDisplay || entry.roleLabel || 'Staff';
 
       return `
         <article class="staff-card">
           <div class="staff-top">
-            <div class="avatar staff-avatar">
-              ${avatar}
-              <span class="status-dot ${escapeHtml(String(entry.status || 'online'))}"></span>
-            </div>
+            <div class="avatar">${avatar}</div>
             <div class="staff-info">
               <h3>${escapeHtml(entry.name)}</h3>
-              <div class="role">${escapeHtml(roleLabel)}</div>
+              <div class="role">${escapeHtml(entry.roleLabel || entry.kind)}</div>
             </div>
           </div>
           <div class="staff-meta">
-            <div><strong>Status:</strong> ${escapeHtml(status)}</div>
-            <div><strong>Role:</strong> ${escapeHtml(entry.roleLabel || '—')}</div>
+            <div><strong>Source:</strong> ${escapeHtml(entry.kind === 'role' ? 'Role' : 'Member')}</div>
+            <div><strong>Tag:</strong> ${escapeHtml(entry.mention || '—')}</div>
           </div>
         </article>
       `;
     }
 
     async function loadStaff() {
-      staffStatus.textContent = 'Loading live staff from Discord…';
+      staffStatus.textContent = 'Loading staff from Discord…';
       try {
         const res = await fetch('/api/staff', { cache: 'no-store' });
         if (!res.ok) throw new Error('Bad response');
@@ -1099,76 +995,20 @@
         const items = Array.isArray(data.staff) ? data.staff : [];
 
         if (!items.length) {
-          staffGrid.innerHTML = `<div class="empty">No online staff found yet. Make sure your Discord staff are online and refresh this page.</div>`;
+          staffGrid.innerHTML = `<div class="empty">No staff has been set yet. Add a role or member in Discord, then refresh this page.</div>`;
           staffStatus.textContent = 'No staff entries found yet.';
           return;
         }
 
         staffGrid.innerHTML = items.map(staffCard).join('');
-        staffStatus.textContent = `${items.length} online staff member(s) loaded successfully.`;
+        staffStatus.textContent = `${items.length} staff member(s) loaded successfully.`;
       } catch (err) {
-        staffGrid.innerHTML = `<div class="empty">Could not load staff right now. Make sure the server is running and the live staff API is available.</div>`;
+        staffGrid.innerHTML = `<div class="empty">Could not load staff right now. Make sure the server is running and the staff API is available.</div>`;
         staffStatus.textContent = 'Live staff load failed.';
       }
     }
 
     loadStaff();
-
-    const rankModal = document.getElementById('rankModal');
-    const rankModalClose = document.getElementById('rankModalClose');
-    const rankModalBody = document.getElementById('rankModalBody');
-
-    function openRankModal(rankName) {
-      rankModalBody.innerHTML = `
-        <div class="premium-step">
-          <span class="num">1</span>
-          <div>
-            <strong>Join G1yrex Hub Discord</strong>
-            <div class="small">Get connected with the official community first.</div>
-          </div>
-        </div>
-        <div class="premium-step">
-          <span class="num">2</span>
-          <div>
-            <strong>Make Support Ticket</strong>
-            <div class="small">Create a ticket so the rank purchase can be handled properly.</div>
-          </div>
-        </div>
-        <div class="premium-step">
-          <span class="num">3</span>
-          <div>
-            <strong>Mention G1yrexMC</strong>
-            <div class="small">don't pay or talk with anyone else For Rank Purchase.</div>
-          </div>
-        </div>
-      `;
-      document.getElementById('rankModalTitle').textContent = `${rankName} • Premium Display`;
-      rankModal.classList.add('open');
-      rankModal.setAttribute('aria-hidden', 'false');
-    }
-
-    function closeRankModal() {
-      rankModal.classList.remove('open');
-      rankModal.setAttribute('aria-hidden', 'true');
-    }
-
-    document.querySelectorAll('.rank-card').forEach((card) => {
-      card.addEventListener('click', () => openRankModal(card.dataset.rank || 'Rank'));
-      card.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          openRankModal(card.dataset.rank || 'Rank');
-        }
-      });
-    });
-
-    rankModal.addEventListener('click', (event) => {
-      if (event.target === rankModal) closeRankModal();
-    });
-    rankModalClose.addEventListener('click', closeRankModal);
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') closeRankModal();
-    });
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -1190,19 +1030,5 @@
 
     sectionMap.forEach(({ section }) => section && activeObserver.observe(section));
   </script>
-
-  <div class="rank-modal" id="rankModal" aria-hidden="true">
-    <div class="rank-modal-card" role="dialog" aria-modal="true" aria-labelledby="rankModalTitle">
-      <div class="rank-modal-head">
-        <div>
-          <div class="eyebrow"><i></i> Premium Display</div>
-          <h3 id="rankModalTitle">Rank Purchase Guide</h3>
-        </div>
-        <button class="modal-close" id="rankModalClose" type="button" aria-label="Close popup">✕</button>
-      </div>
-      <div class="rank-modal-body" id="rankModalBody"></div>
-    </div>
-  </div>
-
 </body>
 </html>
