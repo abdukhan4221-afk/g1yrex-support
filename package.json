@@ -1,17 +1,14 @@
 {
-  "name": "g1yrex-support",
+  "name": "g1yrex-hub",
   "version": "1.0.0",
-  "description": "G1yrex Support Discord bot with ticket system",
   "main": "api_server.js",
   "type": "commonjs",
   "scripts": {
     "start": "node api_server.js"
   },
   "dependencies": {
-    "discord.js": "^14.21.0",
-    "dotenv": "^17.2.0"
-  },
-  "engines": {
-    "node": ">=20.0.0"
+    "discord.js": "^14.22.1",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2"
   }
 }
