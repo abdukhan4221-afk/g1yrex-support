@@ -1202,7 +1202,7 @@ client.on("interactionCreate", async (interaction) => {
           )
           .setTimestamp();
 
-        return interaction.reply({ embeds: [embed], ephemeral: true });
+        return interaction.reply({ embeds: [embed] });
       }
     }
   } catch (error) {
