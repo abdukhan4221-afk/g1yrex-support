@@ -62,11 +62,106 @@ function ensureGuildConfig(guildId) {
       },
       logsChannelId: null,
       staffEntries: [],
+      activity: {},
     };
-  } else if (!Array.isArray(config.guilds[guildId].staffEntries)) {
-    config.guilds[guildId].staffEntries = [];
+  } else {
+    if (!Array.isArray(config.guilds[guildId].staffEntries)) {
+      config.guilds[guildId].staffEntries = [];
+    }
+    if (!config.guilds[guildId].activity || typeof config.guilds[guildId].activity !== "object") {
+      config.guilds[guildId].activity = {};
+    }
   }
   return config.guilds[guildId];
+}
+
+// ---- Activity tracking (voice time + messages) ----
+
+// Debounce disk writes so we don't fsync on every single message/voice event.
+let saveTimeout = null;
+function scheduleSave() {
+  if (saveTimeout) return;
+  saveTimeout = setTimeout(() => {
+    saveTimeout = null;
+    saveConfig();
+  }, 5000);
+}
+
+function getDateKey(date = new Date()) {
+  // YYYY-MM-DD — sorts lexicographically same as chronologically, handy for range checks.
+  return date.toISOString().slice(0, 10);
+}
+
+function ensureUserActivity(guildId, userId) {
+  const cfg = ensureGuildConfig(guildId);
+  if (!cfg.activity[userId]) {
+    cfg.activity[userId] = { voice: {}, messages: {} };
+  }
+  return cfg.activity[userId];
+}
+
+function addVoiceSeconds(guildId, userId, seconds) {
+  if (!seconds || seconds <= 0) return;
+  const user = ensureUserActivity(guildId, userId);
+  const key = getDateKey();
+  user.voice[key] = (user.voice[key] || 0) + seconds;
+  scheduleSave();
+}
+
+function addMessage(guildId, userId, channelId) {
+  const user = ensureUserActivity(guildId, userId);
+  const key = getDateKey();
+  if (!user.messages[key]) user.messages[key] = {};
+  user.messages[key][channelId] = (user.messages[key][channelId] || 0) + 1;
+  scheduleSave();
+}
+
+function getPeriodStartKey(period) {
+  const now = new Date();
+  if (period === "day") {
+    return getDateKey(now);
+  }
+  if (period === "week") {
+    const start = new Date(now);
+    start.setDate(start.getDate() - start.getDay()); // back to Sunday
+    return getDateKey(start);
+  }
+  if (period === "month") {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return getDateKey(start);
+  }
+  return "0000-00-00"; // all time
+}
+
+function getUserStats(guildId, userId, period) {
+  const cfg = ensureGuildConfig(guildId);
+  const activity = cfg.activity[userId];
+  const startKey = getPeriodStartKey(period);
+
+  let totalVoiceSeconds = 0;
+  let totalMessages = 0;
+  const channelMessages = {};
+
+  if (activity) {
+    for (const [dateKey, seconds] of Object.entries(activity.voice || {})) {
+      if (dateKey >= startKey) totalVoiceSeconds += seconds;
+    }
+    for (const [dateKey, channels] of Object.entries(activity.messages || {})) {
+      if (dateKey < startKey) continue;
+      for (const [channelId, count] of Object.entries(channels)) {
+        channelMessages[channelId] = (channelMessages[channelId] || 0) + count;
+        totalMessages += count;
+      }
+    }
+  }
+
+  return { totalVoiceSeconds, totalMessages, channelMessages };
+}
+
+function formatDuration(totalSeconds) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  return `${h}h ${m}m`;
 }
 
 function normalizeTicketType(input) {
@@ -512,6 +607,34 @@ const commands = [
         .setName("list")
         .setDescription("Show current staff entries"),
     ),
+
+  new SlashCommandBuilder()
+    .setName("log")
+    .setDescription("View member activity logs")
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+    .addSubcommand((sub) =>
+      sub
+        .setName("check")
+        .setDescription("Check a member's voice time and message activity")
+        .addUserOption((opt) =>
+          opt
+            .setName("user")
+            .setDescription("Member to check")
+            .setRequired(true),
+        )
+        .addStringOption((opt) =>
+          opt
+            .setName("period")
+            .setDescription("Time range to show")
+            .addChoices(
+              { name: "Day", value: "day" },
+              { name: "Week", value: "week" },
+              { name: "Month", value: "month" },
+              { name: "All Time", value: "all" },
+            )
+            .setRequired(true),
+        ),
+    ),
 ].map((cmd) => cmd.toJSON());
 
 const client = new Client({
@@ -519,6 +642,8 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildPresences,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessages,
   ],
   partials: [Partials.Channel],
 });
@@ -530,6 +655,37 @@ client.on("shardError", (err) => console.error("Shard error:", err));
 client.on("warn", (msg) => console.warn("Client warning:", msg));
 process.on("unhandledRejection", (err) => console.error("Unhandled rejection:", err));
 process.on("uncaughtException", (err) => console.error("Uncaught exception:", err));
+
+// Tracks who is currently in a voice channel and when they joined, so we can
+// compute a duration once they leave. Key: `${guildId}:${userId}` -> joinedAt (ms).
+const voiceSessions = new Map();
+
+client.on("voiceStateUpdate", (oldState, newState) => {
+  const guildId = newState.guild.id;
+  const userId = newState.id;
+  const key = `${guildId}:${userId}`;
+  const wasInVoice = !!oldState.channelId;
+  const isInVoice = !!newState.channelId;
+
+  if (!wasInVoice && isInVoice) {
+    // Joined a voice channel.
+    voiceSessions.set(key, Date.now());
+  } else if (wasInVoice && !isInVoice) {
+    // Left voice entirely — bank the seconds.
+    const joinedAt = voiceSessions.get(key);
+    if (joinedAt) {
+      const seconds = Math.floor((Date.now() - joinedAt) / 1000);
+      addVoiceSeconds(guildId, userId, seconds);
+      voiceSessions.delete(key);
+    }
+  }
+  // Switching channels while staying in voice: timer just keeps running.
+});
+
+client.on("messageCreate", (message) => {
+  if (!message.guild || message.author.bot) return;
+  addMessage(message.guild.id, message.author.id, message.channel.id);
+});
 
 async function registerCommands() {
   const rest = new REST({ version: "10" }).setToken(TOKEN);
@@ -991,6 +1147,61 @@ client.on("interactionCreate", async (interaction) => {
           .setColor(0x5865f2)
           .setTitle("Staff Entries")
           .setDescription(lines.join("\n"));
+        return interaction.reply({ embeds: [embed], ephemeral: true });
+      }
+    }
+
+    if (interaction.commandName === "log") {
+      const sub = interaction.options.getSubcommand();
+
+      if (sub === "check") {
+        const user = interaction.options.getUser("user", true);
+        const period = interaction.options.getString("period", true);
+
+        const stats = getUserStats(interaction.guild.id, user.id, period);
+        // Weekly requirement is always measured against the week, regardless
+        // of which period the mod chose to view.
+        const weekly = getUserStats(interaction.guild.id, user.id, "week");
+
+        const VOICE_LIMIT_HOURS = 10;
+        const MESSAGE_LIMIT = 100;
+
+        const weeklyVoiceHours = weekly.totalVoiceSeconds / 3600;
+        const bestChannelEntry = Object.entries(weekly.channelMessages).sort((a, b) => b[1] - a[1])[0];
+        const bestChannelId = bestChannelEntry?.[0] || null;
+        const bestChannelCount = bestChannelEntry?.[1] || 0;
+
+        const voiceMet = weeklyVoiceHours >= VOICE_LIMIT_HOURS;
+        const msgMet = bestChannelCount >= MESSAGE_LIMIT;
+
+        const topChannelsText = Object.entries(stats.channelMessages)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([channelId, count]) => `<#${channelId}>: ${count}`)
+          .join("\n") || "No messages in this period.";
+
+        const periodLabel = { day: "Today", week: "This Week", month: "This Month", all: "All Time" }[period];
+
+        const embed = new EmbedBuilder()
+          .setColor(0x5865f2)
+          .setTitle(`Activity Log — ${user.tag}`)
+          .setDescription(`Period: **${periodLabel}**`)
+          .setThumbnail(user.displayAvatarURL({ extension: "png", size: 128 }))
+          .addFields(
+            { name: "🎙️ Voice Time", value: formatDuration(stats.totalVoiceSeconds), inline: true },
+            { name: "💬 Total Messages", value: `${stats.totalMessages}`, inline: true },
+            { name: "📊 Top Channels", value: topChannelsText, inline: false },
+            {
+              name: "✅ Weekly Requirement (10h VC / 100 msgs in any one chat)",
+              value: [
+                `Voice: ${weeklyVoiceHours.toFixed(1)}h / ${VOICE_LIMIT_HOURS}h — ${voiceMet ? "✅ Met" : "❌ Not met"}`,
+                `Messages: ${bestChannelCount}${bestChannelId ? ` in <#${bestChannelId}>` : ""} / ${MESSAGE_LIMIT} — ${msgMet ? "✅ Met" : "❌ Not met"}`,
+              ].join("\n"),
+              inline: false,
+            },
+          )
+          .setTimestamp();
+
         return interaction.reply({ embeds: [embed], ephemeral: true });
       }
     }
