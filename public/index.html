@@ -444,6 +444,97 @@
       50% { transform: translateX(8%); opacity:1; }
     }
 
+
+.rank-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.rank-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 22px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.08);
+  transition: transform var(--speed) ease, border-color var(--speed) ease, background var(--speed) ease;
+}
+.rank-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(124,140,255,.25);
+  background: rgba(255,255,255,.06);
+}
+.rank-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(124,140,255,.16), transparent 35%);
+  pointer-events: none;
+}
+.rank-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.rank-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -.3px;
+}
+.rank-emoji {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(124,140,255,.14);
+  border: 1px solid rgba(124,140,255,.2);
+  font-size: 18px;
+}
+.price {
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(124,244,212,.10);
+  border: 1px solid rgba(124,244,212,.18);
+  color: #dffcf5;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.rank-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.rank-card li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 14px;
+}
+.rank-card li span {
+  color: #ffffff;
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+.rank-note {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  color: #dfe5ff;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
     .about-grid {
       display: grid;
       grid-template-columns: 1.08fr .92fr;
@@ -703,40 +794,67 @@
       </div>
     </section>
 
-    <section class="section" id="ranks">
-      <div class="container">
-        <div class="section-head reveal">
-          <div>
-            <h2>Ranks</h2>
-            <p class="lead">Ranks are separate and marked <strong>Coming Soon</strong>.</p>
-          </div>
-          <div class="tag"><span class="dot"></span> Coming soon</div>
-        </div>
 
-        <div class="coming-grid">
-          <article class="coming-card reveal">
-            <div class="coming-pill">Coming Soon</div>
-            <h3>Rank Shop</h3>
-            <p>Placeholder for future rank content.</p>
-            <div class="coming-bar"><span style="width:70%"></span></div>
-          </article>
-          <article class="coming-card reveal">
-            <div class="coming-pill">Coming Soon</div>
-            <h3>Tier Showcase</h3>
-            <p>Future rank cards can be displayed here.</p>
-            <div class="coming-bar"><span style="width:56%"></span></div>
-          </article>
-          <article class="coming-card reveal">
-            <div class="coming-pill">Coming Soon</div>
-            <h3>Perks Preview</h3>
-            <p>Reserved for later rank updates.</p>
-            <div class="coming-bar"><span style="width:82%"></span></div>
-          </article>
-        </div>
+<section class="section" id="ranks">
+  <div class="container">
+    <div class="section-head reveal">
+      <div>
+        <h2>Ranks</h2>
+        <p class="lead">Available ranks with premium perks, clean presentation, and full pricing details.</p>
       </div>
-    </section>
+      <div class="tag"><span class="dot"></span> Available</div>
+    </div>
 
-    <section class="section" id="about">
+    <div class="rank-grid">
+      <article class="rank-card reveal">
+        <div class="rank-top">
+          <div class="rank-name"><span class="rank-emoji">🏆</span> Elite</div>
+          <div class="price">300 PKR 💵</div>
+        </div>
+        <ul>
+          <li><span>🫧</span> Special Elite Kit</li>
+          <li><span>🔥</span> Elite Role Discord</li>
+          <li><span>⛱️</span> Elite Rank Prefix</li>
+          <li><span>🛋️</span> Elite Lounge Access</li>
+        </ul>
+        <div class="rank-note">A strong starter premium tier for players who want style, perks, and a clean identity in the server.</div>
+      </article>
+
+      <article class="rank-card reveal">
+        <div class="rank-top">
+          <div class="rank-name"><span class="rank-emoji">👑</span> Elite+</div>
+          <div class="price">500 PKR 💵</div>
+        </div>
+        <ul>
+          <li><span>🫧</span> Special Elite+ Kit</li>
+          <li><span>🔥</span> Elite+ Role Discord</li>
+          <li><span>⛱️</span> Elite+ Rank Prefix</li>
+          <li><span>🛋️</span> Elite+ Lounge Access</li>
+          <li><span>🍿</span> 10 Mill Per Week Ing</li>
+        </ul>
+        <div class="rank-note">A boosted premium option with extra weekly in-game value and stronger Discord presence.</div>
+      </article>
+
+      <article class="rank-card reveal">
+        <div class="rank-top">
+          <div class="rank-name"><span class="rank-emoji">🏰</span> Apex</div>
+          <div class="price">750 PKR 💵</div>
+        </div>
+        <ul>
+          <li><span>🫧</span> Special Apex Kit</li>
+          <li><span>🔥</span> Apex Role Discord</li>
+          <li><span>⛱️</span> Apex Rank Prefix</li>
+          <li><span>🛋️</span> Apex Lounge Access</li>
+          <li><span>🍿</span> 30 Mill Per Week Ing</li>
+        </ul>
+        <div class="rank-note">The top premium tier for your hub with the best perks and highest value package.</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="about">
+
       <div class="container">
         <div class="section-head reveal">
           <div>
