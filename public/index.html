@@ -3,28 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#07112a" />
   <title>G1yrex's Hub</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <meta name="description" content="G1yrex's Hub - a premium Minecraft community website with Home, Staff, SMP, Ranks, and About sections." />
   <style>
     :root {
-      --bg: #050816;
-      --bg-2: #07112a;
-      --card: rgba(10, 18, 42, .58);
-      --card-2: rgba(12, 21, 48, .84);
-      --line: rgba(255,255,255,.10);
-      --text: #f4f7ff;
-      --muted: rgba(244,247,255,.72);
-      --accent: #27d7ff;
-      --accent-2: #ffd84a;
-      --accent-3: #7b7cff;
-      --success: #7cf5c6;
-      --shadow: 0 30px 100px rgba(0,0,0,.45);
-      --radius: 28px;
+      --bg: #05070d;
+      --bg2: #0b1020;
+      --card: rgba(14, 20, 39, 0.72);
+      --card-2: rgba(255,255,255,0.04);
+      --line: rgba(255,255,255,0.09);
+      --text: #f5f7ff;
+      --muted: rgba(240, 244, 255, 0.72);
+      --soft: rgba(255,255,255,0.06);
+      --accent: #7c8cff;
+      --accent2: #7cf4d4;
+      --danger: #ff7b95;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      --radius: 26px;
       --radius-sm: 18px;
-      --max: 1180px;
+      --container: 1180px;
+      --speed: 280ms;
     }
 
     * { box-sizing: border-box; }
@@ -34,828 +32,495 @@
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--text);
       background:
-        radial-gradient(1200px 700px at 20% 20%, rgba(39,215,255,.16), transparent 56%),
-        radial-gradient(900px 600px at 80% 12%, rgba(123,124,255,.18), transparent 52%),
-        radial-gradient(700px 500px at 50% 82%, rgba(255,216,74,.08), transparent 60%),
-        linear-gradient(180deg, #040712 0%, #050816 38%, #07102a 100%);
+        radial-gradient(circle at 15% 15%, rgba(124,140,255,.22), transparent 32%),
+        radial-gradient(circle at 85% 10%, rgba(124,244,212,.14), transparent 28%),
+        radial-gradient(circle at 80% 85%, rgba(124,140,255,.12), transparent 30%),
+        linear-gradient(180deg, #04060b 0%, #090d18 48%, #04060b 100%);
+      min-height: 100vh;
       overflow-x: hidden;
     }
 
-    body::before {
+    body::before,
+    body::after {
       content: "";
       position: fixed;
       inset: 0;
-      background:
-        linear-gradient(120deg, rgba(39,215,255,.06), transparent 28%, rgba(255,255,255,.03) 50%, transparent 72%, rgba(255,216,74,.05)),
-        radial-gradient(circle at 20% 30%, rgba(255,255,255,.08), transparent 22%),
-        radial-gradient(circle at 80% 70%, rgba(255,255,255,.05), transparent 18%);
       pointer-events: none;
-      mix-blend-mode: screen;
-      opacity: .7;
+      z-index: -1;
     }
-
-    .aurora {
-      position: fixed;
-      inset: -20%;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(39,215,255,.18), transparent 25%),
-        radial-gradient(circle at 80% 20%, rgba(123,124,255,.16), transparent 28%),
-        radial-gradient(circle at 50% 75%, rgba(255,216,74,.10), transparent 28%);
-      filter: blur(80px);
+    body::before {
+      background: linear-gradient(120deg, rgba(124,140,255,.08), transparent 34%, rgba(124,244,212,.06));
+      filter: blur(48px);
+      transform: scale(1.1);
       animation: drift 18s ease-in-out infinite alternate;
-      pointer-events: none;
-      z-index: -1;
+    }
+    body::after {
+      background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 22px 22px;
+      opacity: .18;
     }
 
-    .noise {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: .04;
-      background-image:
-        linear-gradient(rgba(255,255,255,.45) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.45) 1px, transparent 1px);
-      background-size: 52px 52px;
-      z-index: -1;
-      mix-blend-mode: soft-light;
+    @keyframes drift {
+      from { transform: translate3d(-1%, -1%, 0) scale(1.06); }
+      to { transform: translate3d(1.5%, 1%, 0) scale(1.12); }
     }
 
-    .container { width: min(calc(100% - 32px), var(--max)); margin: 0 auto; }
-    .glass {
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    .container { width: min(var(--container), calc(100% - 32px)); margin: 0 auto; }
 
     .topbar {
       position: sticky;
-      top: 18px;
-      z-index: 50;
-      padding: 0 0 12px;
+      top: 0;
+      z-index: 20;
+      padding: 18px 0 0;
+      backdrop-filter: blur(16px);
     }
 
     .nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 14px 18px;
-      border-radius: 999px;
+      gap: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(8, 12, 24, 0.72);
+      box-shadow: var(--shadow);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       min-width: 0;
-      text-decoration: none;
-      color: var(--text);
     }
-
     .brand img {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border-radius: 14px;
       object-fit: cover;
-      border: 1px solid rgba(255,255,255,.22);
-      box-shadow: 0 10px 30px rgba(39,215,255,.22);
-      flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 10px 24px rgba(0,0,0,.28);
     }
-
-    .brand strong {
-      display: block;
-      font-size: 15px;
-      letter-spacing: .3px;
-      line-height: 1.1;
-    }
-
-    .brand span {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 3px;
-    }
+    .brand strong { display: block; font-size: 15px; letter-spacing: .2px; }
+    .brand span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
 
     .navlinks {
       display: flex;
-      align-items: center;
-      gap: 8px;
       flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
     }
-
-    .navlinks a, .btn {
-      position: relative;
-      text-decoration: none;
-      color: var(--text);
-      border: 1px solid transparent;
-      transition: transform .25s ease, background .25s ease, border-color .25s ease, box-shadow .25s ease, opacity .25s ease;
-    }
-
     .navlinks a {
       padding: 10px 14px;
       border-radius: 999px;
       color: var(--muted);
-      font-size: 14px;
-      font-weight: 600;
+      border: 1px solid transparent;
+      transition: transform var(--speed) ease, background var(--speed) ease, border-color var(--speed) ease, color var(--speed) ease;
     }
-
-    .navlinks a:hover, .navlinks a.active {
+    .navlinks a:hover,
+    .navlinks a.active {
       color: var(--text);
       background: rgba(255,255,255,.06);
-      border-color: rgba(255,255,255,.10);
-      box-shadow: inset 0 0 0 1px rgba(39,215,255,.10);
+      border-color: rgba(255,255,255,.1);
+      transform: translateY(-1px);
     }
 
-    .hero {
-      padding: 38px 0 12px;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 24px;
-      align-items: center;
-      min-height: calc(100vh - 120px);
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-      color: rgba(255,255,255,.84);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .2px;
-      width: fit-content;
-      margin-bottom: 18px;
-    }
-
-    .eyebrow i {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: linear-gradient(180deg, var(--success), #33d6ff);
-      box-shadow: 0 0 0 6px rgba(124,245,198,.14);
-      display: inline-block;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(44px, 7vw, 84px);
-      line-height: .94;
-      letter-spacing: -2px;
-      text-wrap: balance;
-    }
-
-    .gradient {
-      background: linear-gradient(90deg, #ffffff 0%, #d7fbff 20%, #53dcff 42%, #8f8bff 70%, #ffd84a 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      text-shadow: 0 0 28px rgba(39,215,255,.12);
-    }
-
-    .subtext {
-      margin: 20px 0 0;
-      max-width: 640px;
-      color: var(--muted);
-      font-size: clamp(16px, 2vw, 18px);
-      line-height: 1.75;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-top: 30px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 14px 20px;
-      border-radius: 999px;
-      font-weight: 700;
-      letter-spacing: .15px;
-      font-size: 14px;
-      border: 1px solid rgba(255,255,255,.12);
-    }
-
-    .btn.primary {
-      background: linear-gradient(135deg, rgba(39,215,255,.95), rgba(123,124,255,.92));
-      color: #fff;
-      box-shadow: 0 18px 42px rgba(39,215,255,.22);
-    }
-
-    .btn.secondary {
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 18px 38px rgba(0,0,0,.26);
-    }
-
-    .mini-stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 28px;
-      max-width: 720px;
-    }
-
-    .stat {
-      padding: 16px 18px;
-      border-radius: 22px;
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
-    }
-
-    .stat strong {
-      display: block;
-      font-size: 20px;
-      margin-bottom: 6px;
-    }
-
-    .stat span {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .showcase {
-      position: relative;
-      padding: 22px;
-      border-radius: 32px;
-    }
-
-    .showcase::before,
-    .showcase::after {
-      content: "";
-      position: absolute;
-      inset: auto;
-      border-radius: 999px;
-      filter: blur(12px);
-      pointer-events: none;
-    }
-
-    .showcase::before {
-      width: 240px;
-      height: 240px;
-      top: -46px;
-      right: -40px;
-      background: radial-gradient(circle, rgba(39,215,255,.26), transparent 65%);
-      animation: pulse 7s ease-in-out infinite;
-    }
-
-    .showcase::after {
-      width: 180px;
-      height: 180px;
-      left: -24px;
-      bottom: -18px;
-      background: radial-gradient(circle, rgba(255,216,74,.18), transparent 65%);
-      animation: pulse 9s ease-in-out infinite reverse;
-    }
-
-    .card-hero {
-      position: relative;
-      overflow: hidden;
-      border-radius: 30px;
-      padding: 24px;
-      min-height: 640px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)),
-        radial-gradient(circle at 50% 18%, rgba(39,215,255,.24), transparent 34%),
-        rgba(8,13,30,.6);
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: var(--shadow);
-      isolation: isolate;
-    }
-
-    .card-hero .topline {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.86);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .2px;
-    }
-
-    .tag .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #7cf5c6;
-      box-shadow: 0 0 0 5px rgba(124,245,198,.14);
-    }
-
-    .logo-frame {
-      margin: 26px auto 0;
-      width: min(92%, 420px);
-      aspect-ratio: 1 / 1;
-      display: grid;
-      place-items: center;
-      border-radius: 34px;
-      background:
-        radial-gradient(circle at 50% 40%, rgba(39,215,255,.3), transparent 40%),
-        linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: inset 0 0 50px rgba(255,255,255,.06), 0 30px 80px rgba(0,0,0,.3);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .logo-frame img {
-      width: 88%;
-      height: 88%;
-      object-fit: contain;
-      filter: drop-shadow(0 20px 40px rgba(0,0,0,.45));
-      transform: translateY(4px);
-      animation: float 6s ease-in-out infinite;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-
-    .floating-chip {
-      position: absolute;
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .2px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-    }
-
-    .chip-1 { top: 22px; left: 22px; animation: bob 7s ease-in-out infinite; }
-    .chip-2 { bottom: 22px; left: 22px; animation: bob 8s ease-in-out infinite reverse; }
-    .chip-3 { top: 22px; right: 22px; animation: bob 9s ease-in-out infinite; }
+    main { padding: 28px 0 70px; }
 
     .section {
-      padding: 64px 0;
-      position: relative;
+      padding: 82px 0 0;
+      scroll-margin-top: 92px;
     }
 
     .section-head {
       display: flex;
       align-items: end;
       justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 22px;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(124,140,255,.22);
+      background: rgba(124,140,255,.08);
+      color: #dfe5ff;
+      font-size: 12px;
+      letter-spacing: .2px;
+    }
+    .eyebrow i {
+      width: 8px; height: 8px; border-radius: 999px; display: inline-block;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 16px rgba(124,140,255,.8);
     }
 
-    .section h2 {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 42px);
-      line-height: 1.05;
-      letter-spacing: -1px;
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: clamp(42px, 6.5vw, 74px);
+      line-height: .95;
+      letter-spacing: -1.5px;
+      margin-top: 18px;
+    }
+    h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.02;
+      letter-spacing: -0.8px;
+    }
+    h3 { font-size: 18px; letter-spacing: -.2px; }
+    .lead, .subtext, .muted { color: var(--muted); }
+    .subtext {
+      font-size: 17px;
+      line-height: 1.75;
+      max-width: 68ch;
+      margin-top: 18px;
+    }
+    .lead { max-width: 68ch; line-height: 1.7; margin-top: 8px; }
+    .gradient {
+      background: linear-gradient(135deg, #ffffff 0%, #c3ccff 36%, #7cf4d4 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
-    .section p.lead {
-      margin: 0;
-      max-width: 640px;
-      color: var(--muted);
-      line-height: 1.7;
-      font-size: 15px;
-    }
-
-    .panel {
-      border-radius: 30px;
-      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
-      border: 1px solid rgba(255,255,255,.10);
+    .glass, .panel, .card, .coming-card, .info-card, .staff-card, .footer {
+      backdrop-filter: blur(16px);
+      background: var(--card);
+      border: 1px solid var(--line);
       box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding-top: 22px;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.25fr .95fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .hero-card,
+    .hero-aside {
+      border-radius: var(--radius);
       overflow: hidden;
     }
+    .hero-card { padding: 30px; }
+    .hero-aside { padding: 22px; }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 18px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: transform var(--speed) ease, filter var(--speed) ease, background var(--speed) ease, border-color var(--speed) ease;
+      font-weight: 600;
+    }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.04); }
+    .btn.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #08111f;
+    }
+    .btn.secondary {
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      border-color: rgba(255,255,255,.09);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .mini-card {
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .mini-card strong { display:block; font-size: 14px; margin-bottom: 6px; }
+    .mini-card span { color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+    .social-box {
+      margin-top: 18px;
+      display: grid;
+      gap: 12px;
+    }
+    .social-grid {
+      display: grid;
+      gap: 10px;
+    }
+    .social-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.07);
+      transition: transform var(--speed) ease, border-color var(--speed) ease, background var(--speed) ease;
+    }
+    .social-link:hover {
+      transform: translateY(-2px);
+      border-color: rgba(124,140,255,.24);
+      background: rgba(124,140,255,.08);
+    }
+    .social-link .left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .badge {
+      width: 36px; height: 36px; border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.08); flex: 0 0 auto;
+    }
+    .badge svg { width: 18px; height: 18px; fill: currentColor; }
+    .social-link small { display:block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+    .panel, .card { border-radius: var(--radius); }
+    .panel { padding: 20px; }
+
+    .stack { display: grid; gap: 14px; }
+    .chip-row { display:flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .chip {
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      color: #e9edff;
+      font-size: 12px;
+    }
+
+    .section-card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .info-card, .coming-card, .staff-card {
+      border-radius: 24px;
+      padding: 20px;
+      transition: transform var(--speed) ease, border-color var(--speed) ease, background var(--speed) ease;
+    }
+    .info-card:hover, .coming-card:hover, .staff-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(124,140,255,.25);
+      background: rgba(255,255,255,.06);
+    }
+    .info-card p, .coming-card p { color: var(--muted); line-height: 1.65; margin-top: 10px; }
 
     .staff-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      padding: 18px 20px;
+      gap: 12px;
+      padding-bottom: 16px;
+      margin-bottom: 16px;
       border-bottom: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.03);
     }
-
-    .staff-toolbar .small {
-      color: var(--muted);
-      font-size: 13px;
+    .small { color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      color: #eef2ff;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 14px rgba(124,140,255,.75);
     }
 
     .staff-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
-      padding: 20px;
     }
-
     .staff-card {
-      position: relative;
-      overflow: hidden;
-      border-radius: 24px;
-      padding: 18px;
-      background:
-        linear-gradient(180deg, rgba(12,18,44,.88), rgba(8,14,34,.70));
-      border: 1px solid rgba(255,255,255,.10);
-      transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease;
+      background: rgba(255,255,255,.04);
       min-height: 160px;
     }
-
-    .staff-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(39,215,255,.35);
-      box-shadow: 0 22px 50px rgba(0,0,0,.35);
-    }
-
     .staff-top {
       display: flex;
       align-items: center;
       gap: 14px;
     }
-
     .avatar {
-      width: 58px;
-      height: 58px;
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      font-size: 22px;
-      font-weight: 900;
+      width: 48px; height: 48px; border-radius: 16px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(124,140,255,.24), rgba(124,244,212,.18));
+      border: 1px solid rgba(255,255,255,.1);
       color: #fff;
-      background: linear-gradient(135deg, rgba(39,215,255,.95), rgba(123,124,255,.88));
-      box-shadow: 0 14px 30px rgba(39,215,255,.18);
-      border: 1px solid rgba(255,255,255,.15);
+      font-weight: 800;
+      font-size: 18px;
       flex: 0 0 auto;
-      overflow: hidden;
     }
-
-    .avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .staff-info h3 {
-      margin: 0;
-      font-size: 16px;
-      line-height: 1.2;
-    }
-
-    .staff-info .role {
+    .staff-info { min-width: 0; }
+    .staff-info h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .role {
+      margin-top: 4px;
       display: inline-flex;
-      margin-top: 8px;
       padding: 7px 10px;
       border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.86);
-      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(124,140,255,.12);
+      border: 1px solid rgba(124,140,255,.16);
+      color: #dfe5ff;
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .2px;
     }
-
     .staff-meta {
-      margin-top: 14px;
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
       color: var(--muted);
       font-size: 13px;
-      line-height: 1.55;
+      line-height: 1.6;
     }
-
     .empty {
-      padding: 26px;
+      padding: 20px;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,.14);
+      background: rgba(255,255,255,.03);
       color: var(--muted);
       text-align: center;
-      border: 1px dashed rgba(255,255,255,.16);
-      border-radius: 24px;
-      background: rgba(255,255,255,.03);
-      margin: 20px;
     }
 
     .coming-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-      padding: 22px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
     }
-
     .coming-card {
-      padding: 24px;
-      border-radius: 26px;
-      border: 1px solid rgba(255,255,255,.10);
-      background:
-        radial-gradient(circle at 20% 20%, rgba(39,215,255,.15), transparent 30%),
-        radial-gradient(circle at 80% 0%, rgba(255,216,74,.12), transparent 24%),
-        rgba(255,255,255,.04);
-      min-height: 220px;
-      position: relative;
-      overflow: hidden;
+      background: rgba(255,255,255,.04);
+      min-height: 240px;
     }
-
-    .coming-card h3 {
-      margin: 0 0 10px;
-      font-size: 22px;
-    }
-
-    .coming-card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
     .coming-pill {
       display: inline-flex;
-      margin-bottom: 14px;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
+      padding: 8px 10px;
       border-radius: 999px;
+      background: rgba(124,140,255,.12);
+      border: 1px solid rgba(124,140,255,.16);
       font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .2px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
+      color: #dbe3ff;
+      margin-bottom: 14px;
     }
-
     .coming-bar {
-      width: 100%;
-      height: 10px;
+      margin-top: 18px;
+      height: 8px;
       border-radius: 999px;
-      background: rgba(255,255,255,.08);
+      background: rgba(255,255,255,.06);
       overflow: hidden;
-      margin-top: 20px;
     }
-
     .coming-bar span {
-      display: block;
-      width: 46%;
-      height: 100%;
+      display:block;
+      height:100%;
+      width: 72%;
       border-radius: inherit;
-      background: linear-gradient(90deg, rgba(39,215,255,.92), rgba(123,124,255,.9), rgba(255,216,74,.86));
-      animation: progress 3.6s ease-in-out infinite alternate;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      animation: pulse 3.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: translateX(-4%); opacity:.8; }
+      50% { transform: translateX(8%); opacity:1; }
     }
 
     .about-grid {
       display: grid;
-      grid-template-columns: .9fr 1.1fr;
-      gap: 18px;
+      grid-template-columns: 1.08fr .92fr;
+      gap: 16px;
     }
-
-    .section-card-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-      margin-top: 18px;
-    }
-
-    .info-card {
-      padding: 22px;
-      border-radius: 28px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.05);
-      box-shadow: 0 18px 45px rgba(0,0,0,.18);
-    }
-
-    .info-card h3 {
-      margin: 0 0 10px;
-      font-size: 21px;
-    }
-
-    .info-card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.8;
-    }
-
     .about-box {
-      border-radius: 28px;
-      padding: 24px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.05);
+      padding: 22px;
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
     }
-
-    .about-box h3 {
-      margin: 0 0 12px;
-      font-size: 24px;
-    }
-
-    .about-box p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.8;
-    }
-
     .info-list {
       display: grid;
       gap: 12px;
       margin-top: 18px;
     }
-
     .info-item {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      padding: 14px;
-      border-radius: 20px;
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 16px;
+      border-radius: 18px;
       background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.07);
+    }
+    .icon {
+      width: 30px; height: 30px; border-radius: 10px;
+      display:inline-flex; align-items:center; justify-content:center;
+      background: rgba(124,140,255,.12);
+      color: #dbe3ff; flex: 0 0 auto;
     }
 
-    .info-item .icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, rgba(39,215,255,.92), rgba(123,124,255,.85));
-      flex: 0 0 auto;
-      font-size: 18px;
+    .footer-wrap {
+      padding: 72px 0 34px;
     }
-
-    .info-item strong { display: block; margin-bottom: 4px; }
-    .info-item span { color: var(--muted); font-size: 13px; line-height: 1.6; }
-
-    .section-foot {
+    .footer {
+      border-radius: 24px;
+      padding: 18px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 18px 22px 0;
-      margin-top: 22px;
-      border-top: 1px solid rgba(255,255,255,.08);
     }
-
-    .section-foot .copyright {
-      color: rgba(244,247,255,.62);
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: .15px;
-    }
-
-    .social-links {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
+    .footer .links {
+      display: flex; flex-wrap: wrap; gap: 10px;
       justify-content: flex-end;
     }
-
-    .social-links a {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      text-decoration: none;
-      color: var(--text);
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.10);
-      transition: transform .25s ease, background .25s ease, border-color .25s ease, box-shadow .25s ease;
+    .footer .links a {
+      display:inline-flex; align-items:center; gap: 8px;
+      padding: 10px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      color: #eef2ff;
       font-size: 13px;
-      font-weight: 700;
+      transition: transform var(--speed) ease, background var(--speed) ease;
     }
-
-    .social-links a:hover {
-      transform: translateY(-2px);
-      background: rgba(255,255,255,.08);
-      border-color: rgba(39,215,255,.30);
-      box-shadow: 0 16px 30px rgba(0,0,0,.20);
-    }
-
-    .social-links svg {
-      width: 16px;
-      height: 16px;
-      flex: 0 0 auto;
-      fill: currentColor;
-    }
-
-    .social-links .youtube { color: #ff5a5f; }
-    .social-links .discord { color: #8ea1ff; }
-    .social-links .tiktok { color: #ffffff; }
-
-    footer {
-      padding: 28px 0 50px;
-      color: rgba(244,247,255,.58);
-      font-size: 13px;
-      text-align: center;
-    }
+    .footer .links a:hover { transform: translateY(-1px); background: rgba(255,255,255,.07); }
+    .footer .links svg { width: 16px; height: 16px; fill: currentColor; }
 
     .reveal {
       opacity: 0;
-      transform: translateY(26px);
-      transition: opacity .8s ease, transform .8s ease;
+      transform: translateY(18px);
+      transition: opacity 760ms ease, transform 760ms ease;
     }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0,0,0,0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    .loader {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    .spinner {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,.18);
-      border-top-color: #fff;
-      animation: spin .9s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes float {
-      0%, 100% { transform: translateY(4px) scale(1); }
-      50% { transform: translateY(-10px) scale(1.02); }
-    }
-    @keyframes bob {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
-    }
-    @keyframes drift {
-      0% { transform: translate3d(-1%, -1%, 0) scale(1); }
-      100% { transform: translate3d(1%, 1%, 0) scale(1.05); }
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(.9); opacity: .75; }
-      50% { transform: scale(1.08); opacity: 1; }
-    }
-    @keyframes progress {
-      0% { transform: translateX(-12%); }
-      100% { transform: translateX(18%); }
-    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
 
     @media (max-width: 1040px) {
-      .hero-grid, .about-grid, .section-card-grid { grid-template-columns: 1fr; }
-      .card-hero { min-height: 560px; }
-      .staff-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .coming-grid { grid-template-columns: 1fr; }
-      .mini-stats { grid-template-columns: 1fr; }
+      .hero-grid, .about-grid { grid-template-columns: 1fr; }
+      .mini-grid, .section-card-grid, .staff-grid, .coming-grid { grid-template-columns: 1fr 1fr; }
     }
-
     @media (max-width: 760px) {
-      .topbar { top: 10px; }
-      .nav {
-        border-radius: 26px;
-        padding: 14px;
-        flex-direction: column;
-        align-items: stretch;
-      }
+      .topbar { padding-top: 10px; }
+      .nav { flex-direction: column; align-items: stretch; }
       .navlinks { justify-content: center; }
       .brand { justify-content: center; }
-      .hero { padding-top: 14px; }
-      .hero-grid { min-height: auto; padding-bottom: 10px; }
-      h1 { font-size: clamp(38px, 13vw, 60px); }
-      .staff-grid { grid-template-columns: 1fr; padding: 16px; }
-      .staff-toolbar { flex-direction: column; align-items: flex-start; }
-      .section { padding: 52px 0; }
-      .section-head { flex-direction: column; align-items: flex-start; }
+      .hero-card, .hero-aside { padding: 20px; }
+      .mini-grid, .section-card-grid, .staff-grid, .coming-grid { grid-template-columns: 1fr; }
+      .section { padding-top: 68px; }
+      .section-head, .staff-toolbar, .footer { flex-direction: column; align-items: flex-start; }
+      .footer .links { justify-content: flex-start; }
+      h1 { font-size: clamp(38px, 12vw, 58px); }
     }
   </style>
 </head>
 <body>
-  <div class="aurora"></div>
-  <div class="noise"></div>
-
   <header class="topbar">
     <div class="container">
       <nav class="nav glass">
@@ -870,7 +535,7 @@
         <div class="navlinks" aria-label="Site navigation">
           <a href="#home" class="active">Home</a>
           <a href="#staff">Staff</a>
-          <a href="#smp">SMP</a>
+          <a href="#smp">Smp</a>
           <a href="#ranks">Ranks</a>
           <a href="#about">About</a>
         </div>
@@ -879,102 +544,107 @@
   </header>
 
   <main>
-    <section class="hero" id="home">
+    <section class="section hero" id="home">
       <div class="container hero-grid">
-        <div class="reveal">
-          <div class="eyebrow"><i></i> G1yrex's Hub • fully smooth premium UI</div>
-          <h1><span class="gradient">Play, rank, and build</span> your community in style.</h1>
+        <article class="hero-card glass reveal">
+          <div class="eyebrow"><i></i> G1yrex's Hub • smooth premium layout</div>
+          <h1><span class="gradient">A clean, modern hub</span> for your community.</h1>
           <p class="subtext">
-            A modern hub for G1yrex with a premium feel, smooth motion, live staff display, and sections
-            for Home, Staff, SMP, Ranks, and About. Everything is built to look clean on desktop and mobile.
+            Home is designed to feel premium and simple, while Staff, Smp, Ranks, and About each stay separate
+            with their own information. No extra photos, no clutter, just a smooth layout built for Railway.
           </p>
 
           <div class="hero-actions">
-            <a class="btn primary" href="#staff">See Staff</a>
-            <a class="btn secondary" href="#about">About Server</a>
+            <a class="btn primary" href="#staff">View Staff</a>
+            <a class="btn secondary" href="#about">About G1yrex</a>
           </div>
 
-          <div class="mini-stats">
-            <div class="stat">
-              <strong>Premium</strong>
-              <span>Glassmorphism cards, neon glow, and smooth transitions.</span>
+          <div class="mini-grid">
+            <div class="mini-card">
+              <strong>Premium Home</strong>
+              <span>Dark glass UI, soft glows, and subtle motion.</span>
             </div>
-            <div class="stat">
+            <div class="mini-card">
               <strong>Live Staff</strong>
-              <span>Loads staff dynamically from your Railway API.</span>
+              <span>Loads directly from your Railway API.</span>
             </div>
-            <div class="stat">
-              <strong>Ready to Deploy</strong>
-              <span>One Express app serves the website and the API.</span>
-            </div>
-          </div>
-
-          <div class="panel reveal" style="margin-top:22px; border-radius:24px;">
-            <div class="staff-toolbar" style="border-bottom:none;">
-              <div>
-                <strong>Quick links</strong>
-                <div class="small">All official G1yrex platforms in one place.</div>
-              </div>
-              <div class="social-links">
-                <a class="youtube" href="https://youtube.com/@g1yrexmc" target="_blank" rel="noreferrer">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a3 3 0 0 0-2.12-2.12C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.48.48A3 3 0 0 0 2.4 7.2C1.92 9.08 1.92 12 1.92 12s0 2.92.48 4.8a3 3 0 0 0 2.12 2.12c1.88.48 7.48.48 7.48.48s5.6 0 7.48-.48a3 3 0 0 0 2.12-2.12c.48-1.88.48-4.8.48-4.8s0-2.92-.48-4.8ZM10 15.2V8.8l5.6 3.2-5.6 3.2Z"/></svg>
-                  YouTube
-                </a>
-                <a class="youtube" href="https://youtube.com/@notg1yrex" target="_blank" rel="noreferrer">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a3 3 0 0 0-2.12-2.12C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.48.48A3 3 0 0 0 2.4 7.2C1.92 9.08 1.92 12 1.92 12s0 2.92.48 4.8a3 3 0 0 0 2.12 2.12c1.88.48 7.48.48 7.48.48s5.6 0 7.48-.48a3 3 0 0 0 2.12-2.12c.48-1.88.48-4.8.48-4.8s0-2.92-.48-4.8ZM10 15.2V8.8l5.6 3.2-5.6 3.2Z"/></svg>
-                  Extra
-                </a>
-                <a class="discord" href="https://discord.com/invite/ZRqHVHWfZY" target="_blank" rel="noreferrer">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 4.8A16.2 16.2 0 0 0 16.2 3.5a11.9 11.9 0 0 0-.56 1.1A15.2 15.2 0 0 0 11.99 4.1a15 15 0 0 0-3.64.5c-.19-.39-.38-.76-.58-1.1A16.2 16.2 0 0 0 3.7 4.8C1.1 8.7.4 12.5.74 16.3a16.6 16.6 0 0 0 5.02 2.6 12.1 12.1 0 0 0 1.08-1.77c-.4-.15-.78-.32-1.15-.5.1-.08.2-.16.3-.24 2.22 1.04 4.62 1.04 6.84 0 .1.08.2.16.3.24-.37.18-.75.35-1.15.5.34.63.7 1.22 1.08 1.77a16.6 16.6 0 0 0 5.02-2.6c.4-4.2-.67-7.95-2.78-11.5ZM8.3 14.05c-1 0-1.82-.92-1.82-2.05 0-1.13.8-2.05 1.82-2.05 1 0 1.82.92 1.82 2.05 0 1.13-.8 2.05-1.82 2.05Zm7.4 0c-1 0-1.82-.92-1.82-2.05 0-1.13.8-2.05 1.82-2.05 1 0 1.82.92 1.82 2.05 0 1.13-.81 2.05-1.82 2.05Z"/></svg>
-                  Discord
-                </a>
-                <a class="tiktok" href="https://tiktok.com/@g1yrexmc" target="_blank" rel="noreferrer">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.6 6.2c-.9-.6-1.5-1.5-1.7-2.6H13V14c0 1.6-1.3 2.9-2.9 2.9S7.2 15.6 7.2 14c0-1.6 1.3-2.9 2.9-2.9.3 0 .6 0 .9.1V8.2c-.3 0-.6-.1-.9-.1A5.9 5.9 0 0 0 4.2 14c0 3.2 2.6 5.8 5.8 5.8s5.8-2.6 5.8-5.8V8.7c1.1.8 2.5 1.3 4 1.4V7.2c-.8 0-1.5-.2-2.2-.6Z"/></svg>
-                  TikTok
-                </a>
-              </div>
+            <div class="mini-card">
+              <strong>Separate Sections</strong>
+              <span>Each page area has its own look and details.</span>
             </div>
           </div>
-        </div>
 
-        <div class="showcase reveal">
-          <div class="card-hero glass">
-            <div class="topline">
-              <div class="tag"><span class="dot"></span> Online hub preview</div>
-              <div class="tag">Smooth animations</div>
+          <div class="chip-row">
+            <span class="chip">Home</span>
+            <span class="chip">Staff</span>
+            <span class="chip">Smp</span>
+            <span class="chip">Ranks</span>
+            <span class="chip">About</span>
+          </div>
+        </article>
+
+        <aside class="hero-aside glass reveal">
+          <div class="stack">
+            <div>
+              <div class="eyebrow"><i></i> Official links</div>
+              <h2 style="margin-top:14px;">Your platforms in one place</h2>
+              <p class="lead">Quick access to G1yrex's official pages and the Discord hub.</p>
             </div>
 
-            <div class="logo-frame">
-              <div class="floating-chip chip-1">Home • Staff • SMP</div>
-              <div class="floating-chip chip-2">Ranks coming soon</div>
-              <div class="floating-chip chip-3">Premium layout</div>
-              <img src="/logo.png" alt="G1yrex logo preview">
-            </div>
+            <div class="social-box">
+              <a class="social-link" href="https://youtube.com/@g1yrexmc" target="_blank" rel="noreferrer">
+                <span class="left">
+                  <span class="badge" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M21.6 7.2a3 3 0 0 0-2.12-2.12C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.48.48A3 3 0 0 0 2.4 7.2C1.92 9.08 1.92 12 1.92 12s0 2.92.48 4.8a3 3 0 0 0 2.12 2.12c1.88.48 7.48.48 7.48.48s5.6 0 7.48-.48a3 3 0 0 0 2.12-2.12c.48-1.88.48-4.8.48-4.8s0-2.92-.48-4.8ZM10 15.2V8.8l5.6 3.2-5.6 3.2Z"/></svg>
+                  </span>
+                  <span><strong>YouTube Official</strong><small>youtube.com/@g1yrexmc</small></span>
+                </span>
+                <span class="tag"><span class="dot"></span> Open</span>
+              </a>
 
-            <div style="display:grid; gap:14px; margin-top:22px;">
-              <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; padding:16px 18px; border-radius:22px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);">
-                <div>
-                  <strong style="display:block; margin-bottom:4px;">Website mood</strong>
-                  <span style="color:var(--muted); font-size:13px;">Clean • dark • premium • futuristic</span>
-                </div>
-                <div class="loader"><span class="spinner"></span> live</div>
-              </div>
+              <a class="social-link" href="https://youtube.com/@notg1yrex" target="_blank" rel="noreferrer">
+                <span class="left">
+                  <span class="badge" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M21.6 7.2a3 3 0 0 0-2.12-2.12C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.48.48A3 3 0 0 0 2.4 7.2C1.92 9.08 1.92 12 1.92 12s0 2.92.48 4.8a3 3 0 0 0 2.12 2.12c1.88.48 7.48.48 7.48.48s5.6 0 7.48-.48a3 3 0 0 0 2.12-2.12c.48-1.88.48-4.8.48-4.8s0-2.92-.48-4.8ZM10 15.2V8.8l5.6 3.2-5.6 3.2Z"/></svg>
+                  </span>
+                  <span><strong>YouTube Extra</strong><small>youtube.com/@notg1yrex</small></span>
+                </span>
+                <span class="tag"><span class="dot"></span> Open</span>
+              </a>
+
+              <a class="social-link" href="https://discord.com/invite/ZRqHVHWfZY" target="_blank" rel="noreferrer">
+                <span class="left">
+                  <span class="badge" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M20.3 4.8A16.2 16.2 0 0 0 16.2 3.5a11.9 11.9 0 0 0-.56 1.1A15.2 15.2 0 0 0 11.99 4.1a15 15 0 0 0-3.64.5c-.19-.39-.38-.76-.58-1.1A16.2 16.2 0 0 0 3.7 4.8C1.1 8.7.4 12.5.74 16.3a16.6 16.6 0 0 0 5.02 2.6 12.1 12.1 0 0 0 1.08-1.77c-.4-.15-.78-.32-1.15-.5.1-.08.2-.16.3-.24 2.22 1.04 4.62 1.04 6.84 0 .1.08.2.16.3.24-.37.18-.75.35-1.15.5.34.63.7 1.22 1.08 1.77a16.6 16.6 0 0 0 5.02-2.6c.4-4.2-.67-7.95-2.78-11.5ZM8.3 14.05c-1 0-1.82-.92-1.82-2.05 0-1.13.8-2.05 1.82-2.05 1 0 1.82.92 1.82 2.05 0 1.13-.8 2.05-1.82 2.05Zm7.4 0c-1 0-1.82-.92-1.82-2.05 0-1.13.8-2.05 1.82-2.05 1 0 1.82.92 1.82 2.05 0 1.13-.81 2.05-1.82 2.05Z"/></svg>
+                  </span>
+                  <span><strong>Discord Hub</strong><small>discord.com/invite/ZRqHVHWfZY</small></span>
+                </span>
+                <span class="tag"><span class="dot"></span> Open</span>
+              </a>
+
+              <a class="social-link" href="https://tiktok.com/@g1yrexmc" target="_blank" rel="noreferrer">
+                <span class="left">
+                  <span class="badge" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M17.6 6.2c-.9-.6-1.5-1.5-1.7-2.6H13V14c0 1.6-1.3 2.9-2.9 2.9S7.2 15.6 7.2 14c0-1.6 1.3-2.9 2.9-2.9.3 0 .6 0 .9.1V8.2c-.3 0-.6-.1-.9-.1A5.9 5.9 0 0 0 4.2 14c0 3.2 2.6 5.8 5.8 5.8s5.8-2.6 5.8-5.8V8.7c1.1.8 2.5 1.3 4 1.4V7.2c-.8 0-1.5-.2-2.2-.6Z"/></svg>
+                  </span>
+                  <span><strong>TikTok</strong><small>tiktok.com/@g1yrexmc</small></span>
+                </span>
+                <span class="tag"><span class="dot"></span> Open</span>
+              </a>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
-
     </section>
 
     <section class="section" id="staff">
-
       <div class="container">
         <div class="section-head reveal">
           <div>
             <h2>Staff</h2>
-            <p class="lead">Live staff entries are controlled from Discord with <strong>/staff set</strong>. Add a role or member and the website will show it here instantly from Railway.</p>
+            <p class="lead">Use <strong>/staff set</strong> with <strong>role/member</strong> to add live staff. This section is fully separate and loads the current list from Railway.</p>
           </div>
-          <div class="tag"><span class="dot"></span> Managed live</div>
+          <div class="tag"><span class="dot"></span> Live API</div>
         </div>
 
         <div class="panel reveal">
@@ -985,185 +655,170 @@
             </div>
             <div class="tag"><span class="dot"></span> /staff set role/member</div>
           </div>
+
           <div class="staff-grid" id="staffGrid">
             <div class="empty">Loading staff…</div>
           </div>
-        </div>
-
-        <div class="section-card-grid">
-          <article class="info-card reveal">
-            <h3>How to add staff</h3>
-            <p>Use <strong>/staff set</strong>, choose <strong>role</strong> or <strong>member</strong>, then pick the target. That entry becomes visible on the site automatically.</p>
-          </article>
-          <article class="info-card reveal">
-            <h3>What appears here</h3>
-            <p>Staff roles, individual members, and their display names are pulled from your Railway API so the page always stays current.</p>
-          </article>
         </div>
       </div>
     </section>
 
     <section class="section" id="smp">
-
       <div class="container">
         <div class="section-head reveal">
           <div>
-            <h2>SMP</h2>
-            <p class="lead">Your SMP area is marked as <strong>Coming Soon</strong>, but it is already laid out like a proper feature page with clean cards and future-ready sections.</p>
+            <h2>Smp</h2>
+            <p class="lead">The SMP section is separate and kept clean. It currently shows <strong>Coming Soon</strong> so the page stays premium instead of empty.</p>
           </div>
-          <div class="tag"><span class="dot"></span> Future content</div>
+          <div class="tag"><span class="dot"></span> Coming soon</div>
         </div>
 
-        <div class="panel reveal">
-          <div class="coming-grid">
-            <article class="coming-card">
-              <div class="coming-pill">Coming Soon</div>
-              <h3>SMP World</h3>
-              <p>Survival gameplay, player bases, raids, shops, trading, and community builds will live here when the world opens.</p>
-              <div class="coming-bar"><span></span></div>
-            </article>
-            <article class="coming-card">
-              <div class="coming-pill">Coming Soon</div>
-              <h3>Events & Seasons</h3>
-              <p>Season launches, reset notes, rewards, and special announcements can be shown in this section later.</p>
-              <div class="coming-bar"><span></span></div>
-            </article>
-            <article class="coming-card">
-              <div class="coming-pill">Coming Soon</div>
-              <h3>SMP Rules</h3>
-              <p>A dedicated place for survival rules, claim rules, and player guidelines so your community stays organized.</p>
-              <div class="coming-bar"><span></span></div>
-            </article>
-          </div>
+        <div class="coming-grid">
+          <article class="coming-card reveal">
+            <div class="coming-pill">Coming Soon</div>
+            <h3>SMP World</h3>
+            <p>Survival gameplay, bases, trading, shops, and community builds can be added here later.</p>
+            <div class="coming-bar"><span></span></div>
+          </article>
+          <article class="coming-card reveal">
+            <div class="coming-pill">Coming Soon</div>
+            <h3>Season Events</h3>
+            <p>Season launches, resets, and special events can be displayed in a polished future update.</p>
+            <div class="coming-bar"><span style="width:62%"></span></div>
+          </article>
+          <article class="coming-card reveal">
+            <div class="coming-pill">Coming Soon</div>
+            <h3>SMP Rules</h3>
+            <p>Claim rules, player rules, and community guidelines can live in this section when ready.</p>
+            <div class="coming-bar"><span style="width:48%"></span></div>
+          </article>
         </div>
       </div>
     </section>
 
     <section class="section" id="ranks">
-
       <div class="container">
         <div class="section-head reveal">
           <div>
             <h2>Ranks</h2>
-            <p class="lead">Ranks are also marked <strong>Coming Soon</strong>. This section is prepared for rank cards, perks, and premium visuals without leaving the page empty.</p>
+            <p class="lead">Ranks are also separate and marked <strong>Coming Soon</strong>. You can fill this with perks, tier cards, and premium rank details later.</p>
           </div>
-          <div class="tag"><span class="dot"></span> Future store</div>
+          <div class="tag"><span class="dot"></span> Coming soon</div>
         </div>
 
-        <div class="panel reveal">
-          <div class="coming-grid">
-            <article class="coming-card">
-              <div class="coming-pill">Coming Soon</div>
-              <h3>Rank Shop</h3>
-              <p>Premium rank cards, perks, icons, and purchase details can be added here whenever you are ready.</p>
-              <div class="coming-bar"><span style="width:52%"></span></div>
-            </article>
-            <article class="coming-card">
-              <div class="coming-pill">Coming Soon</div>
-              <h3>Tier Showcase</h3>
-              <p>Use this card for player tiers, special rewards, and progression visuals in a polished format.</p>
-              <div class="coming-bar"><span style="width:38%"></span></div>
-            </article>
-            <article class="coming-card">
-              <div class="coming-pill">Coming Soon</div>
-              <h3>Perk Preview</h3>
-              <p>Put rank benefits, cosmetics, permissions, or other features here to make the page feel complete.</p>
-              <div class="coming-bar"><span style="width:66%"></span></div>
-            </article>
-          </div>
+        <div class="coming-grid">
+          <article class="coming-card reveal">
+            <div class="coming-pill">Coming Soon</div>
+            <h3>Rank Shop</h3>
+            <p>Premium rank cards, purchase info, and feature summaries can be placed here when ready.</p>
+            <div class="coming-bar"><span style="width:70%"></span></div>
+          </article>
+          <article class="coming-card reveal">
+            <div class="coming-pill">Coming Soon</div>
+            <h3>Tier Showcase</h3>
+            <p>Show player tiers and the value of each rank in a clean, premium style.</p>
+            <div class="coming-bar"><span style="width:56%"></span></div>
+          </article>
+          <article class="coming-card reveal">
+            <div class="coming-pill">Coming Soon</div>
+            <h3>Perks Preview</h3>
+            <p>Permissions, cosmetics, and bonuses can be listed here in the future.</p>
+            <div class="coming-bar"><span style="width:82%"></span></div>
+          </article>
         </div>
       </div>
     </section>
 
     <section class="section" id="about">
-
       <div class="container">
         <div class="section-head reveal">
           <div>
             <h2>About</h2>
-            <p class="lead">Everything here describes the G1yrex community, the Discord hub, and your official links in one clean place.</p>
+            <p class="lead">This section is for your server info, community details, and official links. It stays separate from the other sections and keeps the site organized.</p>
           </div>
           <div class="tag"><span class="dot"></span> Official info</div>
         </div>
 
         <div class="about-grid">
-          <div class="about-box reveal">
+          <article class="about-box reveal">
             <h3>G1yrex's Hub</h3>
-            <p>
-              This is the official premium-style hub for your community. It is built to highlight your staff,
-              show your social links, and keep future server pages ready without redesigning the whole site later.
+            <p class="lead" style="margin-top:12px;">
+              The official premium hub for your Minecraft community. It is designed to show your staff live,
+              keep the layout smooth, and make the website easy to navigate on both mobile and desktop.
             </p>
+
             <div class="info-list">
               <div class="info-item">
                 <div class="icon">✦</div>
                 <div>
-                  <strong>Discord hub</strong>
-                  <span>Invite: <a href="https://discord.com/invite/ZRqHVHWfZY" target="_blank" rel="noreferrer">G1yrex Hub</a></span>
+                  <strong>Premium Look</strong>
+                  <div class="small">Dark glass design, soft gradients, and clean spacing.</div>
                 </div>
               </div>
               <div class="info-item">
-                <div class="icon">◎</div>
+                <div class="icon">✧</div>
                 <div>
-                  <strong>Official channels</strong>
-                  <span>YouTube, Extra, and TikTok are linked across the site for quick access.</span>
+                  <strong>Live Staff System</strong>
+                  <div class="small">The website reads staff data from your Railway API.</div>
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="icon">◌</div>
+                <div>
+                  <strong>Future Ready</strong>
+                  <div class="small">SMP and Ranks sections are ready for future content.</div>
                 </div>
               </div>
             </div>
-          </div>
+          </article>
 
-          <div class="about-box reveal">
-            <h3>Server & creator details</h3>
-            <p>
-              Use this space for your Discord server rules, updates, community info, or a short bio about your
-              team. The page is already wired to Railway so the live parts stay easy to manage.
-            </p>
+          <article class="about-box reveal">
+            <h3>Server Notes</h3>
+            <p class="lead" style="margin-top:12px;">Use this space for your Discord server description, community rules, announcements, or other official information.</p>
             <div class="info-list">
               <div class="info-item">
-                <div class="icon">⚡</div>
-                <div>
-                  <strong>Live API</strong>
-                  <span>Staff cards are pulled straight from your Node/Express backend.</span>
-                </div>
+                <div class="icon">1</div>
+                <div><strong>Discord Hub</strong><div class="small">Invite people to your community and support server.</div></div>
               </div>
               <div class="info-item">
-                <div class="icon">☁</div>
-                <div>
-                  <strong>Deploy ready</strong>
-                  <span>One app serves the website and the API, which is ideal for Railway.</span>
-                </div>
+                <div class="icon">2</div>
+                <div><strong>Creator Links</strong><div class="small">Highlight your official YouTube, TikTok, and extra channel.</div></div>
+              </div>
+              <div class="info-item">
+                <div class="icon">3</div>
+                <div><strong>Custom Content</strong><div class="small">Replace this text whenever you want a new update.</div></div>
               </div>
             </div>
-          </div>
+          </article>
         </div>
       </div>
     </section>
-  </main>
 
-  <footer>
-    <div class="container">
-      <div class="section-foot" style="padding:0; margin-top:0; border-top:none;">
-        <div class="copyright">© <span class="year"></span> G1yrex's Hub</div>
-        <div class="social-links" aria-label="G1yrex social links">
-          <a class="youtube" href="https://youtube.com/@g1yrexmc" target="_blank" rel="noreferrer">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a3 3 0 0 0-2.12-2.12C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.48.48A3 3 0 0 0 2.4 7.2C1.92 9.08 1.92 12 1.92 12s0 2.92.48 4.8a3 3 0 0 0 2.12 2.12c1.88.48 7.48.48 7.48.48s5.6 0 7.48-.48a3 3 0 0 0 2.12-2.12c.48-1.88.48-4.8.48-4.8s0-2.92-.48-4.8ZM10 15.2V8.8l5.6 3.2-5.6 3.2Z"/></svg>
-            YouTube
-          </a>
-          <a class="youtube" href="https://youtube.com/@notg1yrex" target="_blank" rel="noreferrer">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a3 3 0 0 0-2.12-2.12C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.48.48A3 3 0 0 0 2.4 7.2C1.92 9.08 1.92 12 1.92 12s0 2.92.48 4.8a3 3 0 0 0 2.12 2.12c1.88.48 7.48.48 7.48.48s5.6 0 7.48-.48a3 3 0 0 0 2.12-2.12c.48-1.88.48-4.8.48-4.8s0-2.92-.48-4.8ZM10 15.2V8.8l5.6 3.2-5.6 3.2Z"/></svg>
-            Extra
-          </a>
-          <a class="discord" href="https://discord.com/invite/ZRqHVHWfZY" target="_blank" rel="noreferrer">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 4.8A16.2 16.2 0 0 0 16.2 3.5a11.9 11.9 0 0 0-.56 1.1A15.2 15.2 0 0 0 11.99 4.1a15 15 0 0 0-3.64.5c-.19-.39-.38-.76-.58-1.1A16.2 16.2 0 0 0 3.7 4.8C1.1 8.7.4 12.5.74 16.3a16.6 16.6 0 0 0 5.02 2.6 12.1 12.1 0 0 0 1.08-1.77c-.4-.15-.78-.32-1.15-.5.1-.08.2-.16.3-.24 2.22 1.04 4.62 1.04 6.84 0 .1.08.2.16.3.24-.37.18-.75.35-1.15.5.34.63.7 1.22 1.08 1.77a16.6 16.6 0 0 0 5.02-2.6c.4-4.2-.67-7.95-2.78-11.5ZM8.3 14.05c-1 0-1.82-.92-1.82-2.05 0-1.13.8-2.05 1.82-2.05 1 0 1.82.92 1.82 2.05 0 1.13-.8 2.05-1.82 2.05Zm7.4 0c-1 0-1.82-.92-1.82-2.05 0-1.13.8-2.05 1.82-2.05 1 0 1.82.92 1.82 2.05 0 1.13-.81 2.05-1.82 2.05Z"/></svg>
-            Discord
-          </a>
-          <a class="tiktok" href="https://tiktok.com/@g1yrexmc" target="_blank" rel="noreferrer">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.6 6.2c-.9-.6-1.5-1.5-1.7-2.6H13V14c0 1.6-1.3 2.9-2.9 2.9S7.2 15.6 7.2 14c0-1.6 1.3-2.9 2.9-2.9.3 0 .6 0 .9.1V8.2c-.3 0-.6-.1-.9-.1A5.9 5.9 0 0 0 4.2 14c0 3.2 2.6 5.8 5.8 5.8s5.8-2.6 5.8-5.8V8.7c1.1.8 2.5 1.3 4 1.4V7.2c-.8 0-1.5-.2-2.2-.6Z"/></svg>
-            TikTok
-          </a>
-        </div>
+    <div class="footer-wrap">
+      <div class="container">
+        <footer class="footer reveal">
+          <div>
+            <strong>Copyright © <span class="year"></span> G1yrex's Hub</strong>
+            <div class="small">All rights reserved.</div>
+          </div>
+          <div class="links" aria-label="Official links">
+            <a href="https://youtube.com/@g1yrexmc" target="_blank" rel="noreferrer">
+              <svg viewBox="0 0 24 24"><path d="M21.6 7.2a3 3 0 0 0-2.12-2.12C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.48.48A3 3 0 0 0 2.4 7.2C1.92 9.08 1.92 12 1.92 12s0 2.92.48 4.8a3 3 0 0 0 2.12 2.12c1.88.48 7.48.48 7.48.48s5.6 0 7.48-.48a3 3 0 0 0 2.12-2.12c.48-1.88.48-4.8.48-4.8s0-2.92-.48-4.8ZM10 15.2V8.8l5.6 3.2-5.6 3.2Z"/></svg>
+              Official
+            </a>
+            <a href="https://discord.com/invite/ZRqHVHWfZY" target="_blank" rel="noreferrer">
+              <svg viewBox="0 0 24 24"><path d="M20.3 4.8A16.2 16.2 0 0 0 16.2 3.5a11.9 11.9 0 0 0-.56 1.1A15.2 15.2 0 0 0 11.99 4.1a15 15 0 0 0-3.64.5c-.19-.39-.38-.76-.58-1.1A16.2 16.2 0 0 0 3.7 4.8C1.1 8.7.4 12.5.74 16.3a16.6 16.6 0 0 0 5.02 2.6 12.1 12.1 0 0 0 1.08-1.77c-.4-.15-.78-.32-1.15-.5.1-.08.2-.16.3-.24 2.22 1.04 4.62 1.04 6.84 0 .1.08.2.16.3.24-.37.18-.75.35-1.15.5.34.63.7 1.22 1.08 1.77a16.6 16.6 0 0 0 5.02-2.6c.4-4.2-.67-7.95-2.78-11.5ZM8.3 14.05c-1 0-1.82-.92-1.82-2.05 0-1.13.8-2.05 1.82-2.05 1 0 1.82.92 1.82 2.05 0 1.13-.8 2.05-1.82 2.05Zm7.4 0c-1 0-1.82-.92-1.82-2.05 0-1.13.8-2.05 1.82-2.05 1 0 1.82.92 1.82 2.05 0 1.13-.81 2.05-1.82 2.05Z"/></svg>
+              Discord
+            </a>
+            <a href="https://tiktok.com/@g1yrexmc" target="_blank" rel="noreferrer">
+              <svg viewBox="0 0 24 24"><path d="M17.6 6.2c-.9-.6-1.5-1.5-1.7-2.6H13V14c0 1.6-1.3 2.9-2.9 2.9S7.2 15.6 7.2 14c0-1.6 1.3-2.9 2.9-2.9.3 0 .6 0 .9.1V8.2c-.3 0-.6-.1-.9-.1A5.9 5.9 0 0 0 4.2 14c0 3.2 2.6 5.8 5.8 5.8s5.8-2.6 5.8-5.8V8.7c1.1.8 2.5 1.3 4 1.4V7.2c-.8 0-1.5-.2-2.2-.6Z"/></svg>
+              TikTok
+            </a>
+          </div>
+        </footer>
       </div>
     </div>
-  </footer>
+  </main>
 
   <script>
     const staffGrid = document.getElementById('staffGrid');
@@ -1186,14 +841,10 @@
     }
 
     function staffCard(entry) {
-      const avatar = entry.avatarUrl
-        ? `<div class="avatar"><img src="${escapeHtml(entry.avatarUrl)}" alt="${escapeHtml(entry.name)}"></div>`
-        : `<div class="avatar">${escapeHtml(initial(entry.name))}</div>`;
-
       return `
         <article class="staff-card">
           <div class="staff-top">
-            ${avatar}
+            <div class="avatar">${escapeHtml(initial(entry.name))}</div>
             <div class="staff-info">
               <h3>${escapeHtml(entry.name)}</h3>
               <div class="role">${escapeHtml(entry.roleLabel || entry.kind)}</div>
@@ -1239,11 +890,7 @@
 
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
 
-    const sectionMap = navLinks.map((link) => {
-      const id = link.getAttribute('href');
-      return { link, section: document.querySelector(id) };
-    }).filter(Boolean);
-
+    const sectionMap = navLinks.map((link) => ({ link, section: document.querySelector(link.getAttribute('href')) })).filter(Boolean);
     const activeObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
