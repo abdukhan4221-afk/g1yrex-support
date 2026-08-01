@@ -147,35 +147,35 @@ function removeStaffEntry(guildId, kind, id) {
   return changed;
 }
 
+function isOnline(member) {
+  const status = member?.presence?.status;
+  return status === "online" || status === "idle" || status === "dnd";
+}
+
 async function buildStaffPayload(guild) {
   if (!guild) return [];
   const cfg = ensureGuildConfig(guild.id);
   const items = [];
+
+  // Ask the gateway for members + presences so member.presence is populated in cache.
+  await guild.members.fetch({ withPresences: true }).catch(() => null);
 
   for (const entry of cfg.staffEntries) {
     if (entry.kind === "role") {
       const role = await guild.roles.fetch(entry.id).catch(() => null);
       if (!role) continue;
 
-      const members = Array.from(role.members.values());
-      if (!members.length) {
-        items.push({
-          kind: "role",
-          id: role.id,
-          name: role.name,
-          roleLabel: `Role • ${role.name}`,
-          mention: `<@&${role.id}>`,
-          avatarUrl: null,
-        });
-        continue;
-      }
+      const onlineMembers = Array.from(role.members.values()).filter(isOnline);
+      // Only show this role if at least one member holding it is currently online.
+      if (!onlineMembers.length) continue;
 
-      for (const member of members) {
+      for (const member of onlineMembers) {
         items.push({
           kind: "role",
           id: member.id,
           name: member.displayName || member.user.tag,
           roleLabel: `Role • ${role.name}`,
+          status: member.presence.status,
           mention: `<@${member.id}>`,
           avatarUrl: member.displayAvatarURL({ extension: "png", size: 128 }),
         });
@@ -184,12 +184,13 @@ async function buildStaffPayload(guild) {
     }
 
     const member = await guild.members.fetch(entry.id).catch(() => null);
-    if (!member) continue;
+    if (!member || !isOnline(member)) continue;
     items.push({
       kind: "member",
       id: member.id,
       name: member.displayName || member.user.tag,
       roleLabel: `Member • ${member.roles.highest?.name || "No role"}`,
+      status: member.presence.status,
       mention: `<@${member.id}>`,
       avatarUrl: member.displayAvatarURL({ extension: "png", size: 128 }),
     });
@@ -517,9 +518,18 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildPresences,
   ],
   partials: [Partials.Channel],
 });
+
+// Prevent the whole process from crashing on network hiccups / unhandled errors.
+// Without these, an unhandled "error" event or promise rejection kills the bot (SIGTERM/exit).
+client.on("error", (err) => console.error("Client error:", err));
+client.on("shardError", (err) => console.error("Shard error:", err));
+client.on("warn", (msg) => console.warn("Client warning:", msg));
+process.on("unhandledRejection", (err) => console.error("Unhandled rejection:", err));
+process.on("uncaughtException", (err) => console.error("Uncaught exception:", err));
 
 async function registerCommands() {
   const rest = new REST({ version: "10" }).setToken(TOKEN);
@@ -998,16 +1008,13 @@ client.on("interactionCreate", async (interaction) => {
 const app = express();
 app.disable("x-powered-by");
 app.use(express.json());
-
-const PUBLIC_DIR = path.join(__dirname, "public");
-
-app.use(express.static(PUBLIC_DIR, {
+app.use(express.static(__dirname, {
   extensions: ["html"],
   maxAge: "5m",
 }));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 app.get("/api/staff", async (req, res) => {
