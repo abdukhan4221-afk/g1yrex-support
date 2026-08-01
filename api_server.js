@@ -1,4 +1,3 @@
-// api_server.js
 require("dotenv").config();
 
 const fs = require("fs");
@@ -7,6 +6,7 @@ const path = require("path");
 const {
   Client,
   GatewayIntentBits,
+  Partials,
   REST,
   Routes,
   SlashCommandBuilder,
@@ -21,25 +21,28 @@ const {
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID || null;
-const CONFIG_PATH = path.join(__dirname, "ticket-config.json");
-
-const BOT_NAME = "G1yrex Support";
 
 if (!TOKEN || !CLIENT_ID) {
   console.error("Missing TOKEN or CLIENT_ID in .env");
   process.exit(1);
 }
 
+const BOT_NAME = "G1yrex Support";
+const CONFIG_PATH = path.join(__dirname, "ticket-config.json");
+
 const defaultConfig = {
   guilds: {},
 };
 
 function loadConfig() {
-  if (!fs.existsSync(CONFIG_PATH)) return defaultConfig;
+  if (!fs.existsSync(CONFIG_PATH)) return structuredClone(defaultConfig);
   try {
-    return JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
+    const raw = fs.readFileSync(CONFIG_PATH, "utf8");
+    const parsed = JSON.parse(raw);
+    if (!parsed.guilds || typeof parsed.guilds !== "object") return structuredClone(defaultConfig);
+    return parsed;
   } catch {
-    return defaultConfig;
+    return structuredClone(defaultConfig);
   }
 }
 
@@ -47,7 +50,7 @@ function saveConfig() {
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
 }
 
-function getGuildConfig(guildId) {
+function ensureGuildConfig(guildId) {
   if (!config.guilds[guildId]) {
     config.guilds[guildId] = {
       ticketTypes: {
@@ -61,26 +64,22 @@ function getGuildConfig(guildId) {
   return config.guilds[guildId];
 }
 
-function normalizeType(input) {
-  const v = String(input || "support").toLowerCase();
-  if (v === "support") return "support";
-  if (v === "staffapp" || v === "staff") return "staffapp";
-  if (v === "mediaapp" || v === "media") return "mediaapp";
+function normalizeTicketType(input) {
+  const value = String(input || "support").toLowerCase();
+  if (value === "support") return "support";
+  if (value === "staffapp" || value === "staff") return "staffapp";
+  if (value === "mediaapp" || value === "media") return "mediaapp";
   return "support";
 }
 
-function ticketDisplayName(type) {
+function ticketLabel(type) {
   if (type === "support") return "Support";
   if (type === "staffapp") return "Staff App";
   if (type === "mediaapp") return "Media App";
   return "Support";
 }
 
-function ticketButtonId(type) {
-  return `ticket:create:${type}`;
-}
-
-function safeChannelName(text) {
+function slugify(text) {
   return String(text)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -89,20 +88,20 @@ function safeChannelName(text) {
 }
 
 function parseColor(input) {
-  if (!input) return 0x2b2d31;
-  const raw = String(input).trim().replace(/^#/, "");
-  if (/^[0-9a-fA-F]{6}$/.test(raw)) return parseInt(raw, 16);
-  const named = {
+  if (!input) return 0x5865f2;
+  const cleaned = String(input).trim().replace(/^#/, "");
+  if (/^[0-9a-fA-F]{6}$/.test(cleaned)) return parseInt(cleaned, 16);
+  const colors = {
     blurple: 0x5865f2,
     green: 0x57f287,
-    yellow: 0xfee75c,
     red: 0xed4245,
+    yellow: 0xfee75c,
     white: 0xffffff,
     black: 0x000000,
     gray: 0x2b2d31,
     grey: 0x2b2d31,
   };
-  return named[raw.toLowerCase()] ?? 0x2b2d31;
+  return colors[cleaned.toLowerCase()] ?? 0x5865f2;
 }
 
 const config = loadConfig();
@@ -132,7 +131,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("ticketpanel")
-    .setDescription("Ticket panel tools")
+    .setDescription("Send the ticket panel")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
     .addSubcommand((sub) =>
       sub
@@ -171,7 +170,7 @@ const commands = [
     .addSubcommandGroup((group) =>
       group
         .setName("perm")
-        .setDescription("Set support ticket permission")
+        .setDescription("Set support ticket permissions")
         .addSubcommand((sub) =>
           sub
             .setName("set")
@@ -209,7 +208,7 @@ const commands = [
     .addSubcommandGroup((group) =>
       group
         .setName("perm")
-        .setDescription("Set staff application permission")
+        .setDescription("Set staff application permissions")
         .addSubcommand((sub) =>
           sub
             .setName("set")
@@ -247,7 +246,7 @@ const commands = [
     .addSubcommandGroup((group) =>
       group
         .setName("perm")
-        .setDescription("Set media application permission")
+        .setDescription("Set media application permissions")
         .addSubcommand((sub) =>
           sub
             .setName("set")
@@ -316,7 +315,7 @@ const commands = [
         .addStringOption((opt) =>
           opt
             .setName("color")
-            .setDescription("Embed color hex, e.g. #5865F2")
+            .setDescription("Embed color hex, for example #5865F2")
             .setRequired(false)
         )
     ),
@@ -360,14 +359,14 @@ const commands = [
         .setDescription("Reason for the ban")
         .setRequired(false)
     ),
-].map((c) => c.toJSON());
+].map((cmd) => cmd.toJSON());
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages,
   ],
+  partials: [Partials.Channel],
 });
 
 async function registerCommands() {
@@ -384,102 +383,6 @@ async function registerCommands() {
     });
     console.log("Registered global commands");
   }
-}
-
-async function createTicketChannel(interaction, type, target = null) {
-  const guild = interaction.guild;
-  const member = interaction.member;
-  const cfg = getGuildConfig(guild.id);
-  const ticket = cfg.ticketTypes[type];
-
-  if (!ticket?.categoryId) {
-    throw new Error(`The category for ${ticketDisplayName(type)} tickets is not set yet.`);
-  }
-
-  const me = guild.members.me || await guild.members.fetchMe();
-  const typeName = ticketDisplayName(type);
-
-  const overwrites = [
-    {
-      id: guild.roles.everyone.id,
-      deny: ["ViewChannel"],
-    },
-    {
-      id: member.id,
-      allow: ["ViewChannel", "SendMessages", "ReadMessageHistory", "AttachFiles", "EmbedLinks"],
-    },
-    {
-      id: me.id,
-      allow: ["ViewChannel", "SendMessages", "ManageChannels", "ReadMessageHistory", "AttachFiles", "EmbedLinks"],
-    },
-  ];
-
-  for (const permId of ticket.permIds || []) {
-    overwrites.push({
-      id: permId,
-      allow: ["ViewChannel", "SendMessages", "ReadMessageHistory", "AttachFiles", "EmbedLinks"],
-    });
-  }
-
-  if (target) {
-    overwrites.push({
-      id: target.id,
-      allow: ["ViewChannel", "SendMessages", "ReadMessageHistory", "AttachFiles", "EmbedLinks"],
-    });
-  }
-
-  const channel = await guild.channels.create({
-    name: `${type}-${safeChannelName(member.user.username)}`,
-    type: ChannelType.GuildText,
-    parent: ticket.categoryId,
-    topic: `Ticket | ${type} | opener:${member.id}`,
-    permissionOverwrites: overwrites,
-  });
-
-  const notice = new EmbedBuilder()
-    .setColor(0x5865f2)
-    .setTitle(`${typeName} Ticket`)
-    .setDescription(
-      [
-        `Hello <@${member.id}>!`,
-        "",
-        "A staff member will reply as soon as possible.",
-        target ? `Added: <@${target.id}>` : null,
-        "",
-        "Use the button below to close this ticket when you are done.",
-      ].filter(Boolean).join("\n")
-    );
-
-  const closeRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("ticket:close")
-      .setLabel("Close Ticket")
-      .setStyle(ButtonStyle.Danger)
-  );
-
-  await channel.send({
-    content: `<@${member.id}>`,
-    embeds: [notice],
-    components: [closeRow],
-  });
-
-  await sendTicketLog(
-    guild,
-    new EmbedBuilder()
-      .setColor(0x57f287)
-      .setTitle("Ticket Opened")
-      .setDescription(
-        [
-          `Type: ${typeName}`,
-          `Channel: ${channel}`,
-          `Opened by: <@${member.id}>`,
-          target ? `Added: <@${target.id}>` : null,
-        ].filter(Boolean).join("\n")
-      )
-      .setTimestamp()
-  );
-
-  return channel;
 }
 
 function ticketPanelEmbed() {
@@ -511,28 +414,149 @@ function ticketPanelEmbed() {
 function ticketPanelRow() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId(ticketButtonId("support"))
+      .setCustomId("ticket:create:support")
       .setLabel("Support")
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
-      .setCustomId(ticketButtonId("staffapp"))
+      .setCustomId("ticket:create:staffapp")
       .setLabel("Staff App")
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId(ticketButtonId("mediaapp"))
+      .setCustomId("ticket:create:mediaapp")
       .setLabel("Media App")
       .setStyle(ButtonStyle.Success)
   );
 }
 
 async function sendTicketLog(guild, embed) {
-  const cfg = getGuildConfig(guild.id);
-  if (!cfg.logsChannelId) return;
+  const cfg = ensureGuildConfig(guild.id);
+  if (!cfg.logsChannelId) return false;
 
-  const ch = await guild.channels.fetch(cfg.logsChannelId).catch(() => null);
-  if (!ch || !ch.isTextBased()) return;
+  const channel = await guild.channels.fetch(cfg.logsChannelId).catch(() => null);
+  if (!channel || !channel.isTextBased()) return false;
 
-  await ch.send({ embeds: [embed] }).catch(() => {});
+  await channel.send({ embeds: [embed] }).catch(() => {});
+  return true;
+}
+
+async function createTicketChannel(interaction, type, target = null) {
+  const guild = interaction.guild;
+  const member = interaction.member;
+  const cfg = ensureGuildConfig(guild.id);
+  const ticket = cfg.ticketTypes[type];
+
+  if (!ticket?.categoryId) {
+    throw new Error(`The category for ${ticketLabel(type)} tickets is not set yet.`);
+  }
+
+  const me = guild.members.me || await guild.members.fetchMe();
+
+  const overwrites = [
+    {
+      id: guild.roles.everyone.id,
+      deny: [PermissionFlagsBits.ViewChannel],
+    },
+    {
+      id: member.id,
+      allow: [
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.ReadMessageHistory,
+        PermissionFlagsBits.AttachFiles,
+        PermissionFlagsBits.EmbedLinks,
+      ],
+    },
+    {
+      id: me.id,
+      allow: [
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.ManageChannels,
+        PermissionFlagsBits.ReadMessageHistory,
+        PermissionFlagsBits.AttachFiles,
+        PermissionFlagsBits.EmbedLinks,
+      ],
+    },
+  ];
+
+  for (const permId of ticket.permIds || []) {
+    overwrites.push({
+      id: permId,
+      allow: [
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.ReadMessageHistory,
+        PermissionFlagsBits.AttachFiles,
+        PermissionFlagsBits.EmbedLinks,
+      ],
+    });
+  }
+
+  if (target) {
+    overwrites.push({
+      id: target.id,
+      allow: [
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.ReadMessageHistory,
+        PermissionFlagsBits.AttachFiles,
+        PermissionFlagsBits.EmbedLinks,
+      ],
+    });
+  }
+
+  const channel = await guild.channels.create({
+    name: `${type}-${slugify(member.user.username)}`,
+    type: ChannelType.GuildText,
+    parent: ticket.categoryId,
+    topic: `Ticket | ${type} | opener:${member.id}`,
+    permissionOverwrites: overwrites,
+  });
+
+  const notice = new EmbedBuilder()
+    .setColor(0x5865f2)
+    .setTitle(`${ticketLabel(type)} Ticket`)
+    .setDescription(
+      [
+        `Hello <@${member.id}>!`,
+        "",
+        "A staff member will reply as soon as possible.",
+        target ? `Added: <@${target.id}>` : null,
+        "",
+        "Use the button below to close this ticket when you are done.",
+      ].filter(Boolean).join("\n")
+    );
+
+  const closeRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("ticket:close")
+      .setLabel("Close Ticket")
+      .setStyle(ButtonStyle.Danger)
+  );
+
+  await channel.send({
+    content: `<@${member.id}>`,
+    embeds: [notice],
+    components: [closeRow],
+  });
+
+  await sendTicketLog(
+    guild,
+    new EmbedBuilder()
+      .setColor(0x57f287)
+      .setTitle("Ticket Opened")
+      .setDescription(
+        [
+          `Type: ${ticketLabel(type)}`,
+          `Channel: ${channel}`,
+          `Opened by: <@${member.id}>`,
+          target ? `Added: <@${target.id}>` : null,
+        ].filter(Boolean).join("\n")
+      )
+      .setTimestamp()
+  );
+
+  return channel;
 }
 
 async function closeCurrentTicket(channel, closedByTag) {
@@ -540,11 +564,10 @@ async function closeCurrentTicket(channel, closedByTag) {
     return false;
   }
 
-  const guild = channel.guild;
   await channel.send(`Closing ticket requested by ${closedByTag}. This channel will be deleted in 5 seconds.`);
 
   await sendTicketLog(
-    guild,
+    channel.guild,
     new EmbedBuilder()
       .setColor(0xed4245)
       .setTitle("Ticket Closed")
@@ -569,8 +592,8 @@ client.once("ready", async () => {
     await registerCommands();
     console.log(`Logged in as ${client.user.tag}`);
     client.user.setActivity(`${BOT_NAME} | Sub To G1yrexMC`, { type: 2 });
-  } catch (err) {
-    console.error("Failed to register commands:", err);
+  } catch (error) {
+    console.error("Failed to register commands:", error);
   }
 });
 
@@ -578,7 +601,7 @@ client.on("interactionCreate", async (interaction) => {
   try {
     if (interaction.isButton()) {
       if (interaction.customId.startsWith("ticket:create:")) {
-        const type = normalizeType(interaction.customId.split(":")[2]);
+        const type = normalizeTicketType(interaction.customId.split(":")[2]);
         const channel = await createTicketChannel(interaction, type, null);
         return interaction.reply({
           content: `Ticket created: ${channel}`,
@@ -609,7 +632,7 @@ client.on("interactionCreate", async (interaction) => {
 
       if (group === "channel" && sub === "set") {
         const channel = interaction.options.getChannel("channel", true);
-        const cfg = getGuildConfig(interaction.guild.id);
+        const cfg = ensureGuildConfig(interaction.guild.id);
         cfg.logsChannelId = channel.id;
         saveConfig();
 
@@ -649,8 +672,7 @@ client.on("interactionCreate", async (interaction) => {
 
       const group = interaction.options.getSubcommandGroup();
       const sub = interaction.options.getSubcommand();
-
-      const cfg = getGuildConfig(interaction.guild.id);
+      const cfg = ensureGuildConfig(interaction.guild.id);
       const ticket = cfg.ticketTypes[key];
 
       if (group === "category" && sub === "set") {
@@ -658,7 +680,7 @@ client.on("interactionCreate", async (interaction) => {
         ticket.categoryId = category.id;
         saveConfig();
         return interaction.reply({
-          content: `${ticketDisplayName(key)} ticket category set to ${category}.`,
+          content: `${ticketLabel(key)} ticket category set to ${category}.`,
           ephemeral: true,
         });
       }
@@ -670,17 +692,16 @@ client.on("interactionCreate", async (interaction) => {
           saveConfig();
         }
         return interaction.reply({
-          content: `${ticketDisplayName(key)} ticket permission added for <@${target.id}>.`,
+          content: `${ticketLabel(key)} ticket permission added for <@${target.id}>.`,
           ephemeral: true,
         });
       }
     }
 
     if (interaction.commandName === "open") {
-      const type = normalizeType(interaction.options.getString("type") || "support");
-      const target = interaction.options.getMentionable("target");
-
-      const channel = await createTicketChannel(interaction, type, target || null);
+      const type = normalizeTicketType(interaction.options.getString("type") || "support");
+      const target = interaction.options.getMentionable("target") || null;
+      const channel = await createTicketChannel(interaction, type, target);
       return interaction.reply({
         content: `Ticket created: ${channel}`,
         ephemeral: true,
@@ -740,15 +761,15 @@ client.on("interactionCreate", async (interaction) => {
       const member = interaction.options.getUser("member", true);
       const reason = interaction.options.getString("reason") || "No reason provided.";
 
-      const targetMember = await interaction.guild.members.fetch(member.id).catch(() => null);
-      if (!targetMember) {
+      const guildMember = await interaction.guild.members.fetch(member.id).catch(() => null);
+      if (!guildMember) {
         return interaction.reply({
           content: "I could not find that member in this server.",
           ephemeral: true,
         });
       }
 
-      await targetMember.ban({ reason: `${reason} | Banned by ${interaction.user.tag}` });
+      await guildMember.ban({ reason: `${reason} | Banned by ${interaction.user.tag}` });
       return interaction.reply({
         content: `${member.tag} has been banned.`,
         ephemeral: true,
@@ -756,13 +777,12 @@ client.on("interactionCreate", async (interaction) => {
     }
   } catch (error) {
     console.error(error);
-    const content = error?.message || "Something went wrong.";
 
+    const message = error?.message || "Something went wrong.";
     if (interaction.replied || interaction.deferred) {
-      return interaction.followUp({ content, ephemeral: true }).catch(() => {});
+      return interaction.followUp({ content: message, ephemeral: true }).catch(() => {});
     }
-
-    return interaction.reply({ content, ephemeral: true }).catch(() => {});
+    return interaction.reply({ content: message, ephemeral: true }).catch(() => {});
   }
 });
 
