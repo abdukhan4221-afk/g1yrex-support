@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const fs = require("fs");
 const path = require("path");
-
+const express = require("express");
 const {
   Client,
   GatewayIntentBits,
@@ -21,6 +21,7 @@ const {
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID || null;
+const PORT = Number(process.env.PORT || 3000);
 
 if (!TOKEN || !CLIENT_ID) {
   console.error("Missing TOKEN or CLIENT_ID in .env");
@@ -60,7 +61,10 @@ function ensureGuildConfig(guildId) {
         mediaapp: { categoryId: null, permIds: [] },
       },
       logsChannelId: null,
+      staffEntries: [],
     };
+  } else if (!Array.isArray(config.guilds[guildId].staffEntries)) {
+    config.guilds[guildId].staffEntries = [];
   }
   return config.guilds[guildId];
 }
@@ -105,6 +109,95 @@ function parseColor(input) {
   return colors[cleaned.toLowerCase()] ?? 0x5865f2;
 }
 
+function getPrimaryGuildId() {
+  if (GUILD_ID) return GUILD_ID;
+  const keys = Object.keys(config.guilds);
+  return keys[0] || null;
+}
+
+function staffRoleLabel(kind, target) {
+  return kind === "role" ? `Role • ${target.name}` : `Member • ${target.displayName || target.user?.username || target.username || target.name}`;
+}
+
+async function upsertStaffEntry(guild, kind, target, addedByTag) {
+  const cfg = ensureGuildConfig(guild.id);
+  const existingIndex = cfg.staffEntries.findIndex((entry) => entry.kind === kind && entry.id === target.id);
+
+  const entry = {
+    kind,
+    id: target.id,
+    name: kind === "role" ? target.name : (target.displayName || target.user?.tag || target.tag || target.username || "Member"),
+    addedBy: addedByTag,
+    addedAt: new Date().toISOString(),
+  };
+
+  if (existingIndex >= 0) cfg.staffEntries[existingIndex] = entry;
+  else cfg.staffEntries.push(entry);
+
+  saveConfig();
+  return entry;
+}
+
+function removeStaffEntry(guildId, kind, id) {
+  const cfg = ensureGuildConfig(guildId);
+  const before = cfg.staffEntries.length;
+  cfg.staffEntries = cfg.staffEntries.filter((entry) => !(entry.kind === kind && entry.id === id));
+  const changed = cfg.staffEntries.length !== before;
+  if (changed) saveConfig();
+  return changed;
+}
+
+async function buildStaffPayload(guild) {
+  if (!guild) return [];
+  const cfg = ensureGuildConfig(guild.id);
+  const items = [];
+
+  for (const entry of cfg.staffEntries) {
+    if (entry.kind === "role") {
+      const role = await guild.roles.fetch(entry.id).catch(() => null);
+      if (!role) continue;
+
+      const members = Array.from(role.members.values());
+      if (!members.length) {
+        items.push({
+          kind: "role",
+          id: role.id,
+          name: role.name,
+          roleLabel: `Role • ${role.name}`,
+          mention: `<@&${role.id}>`,
+          avatarUrl: null,
+        });
+        continue;
+      }
+
+      for (const member of members) {
+        items.push({
+          kind: "role",
+          id: member.id,
+          name: member.displayName || member.user.tag,
+          roleLabel: `Role • ${role.name}`,
+          mention: `<@${member.id}>`,
+          avatarUrl: member.displayAvatarURL({ extension: "png", size: 128 }),
+        });
+      }
+      continue;
+    }
+
+    const member = await guild.members.fetch(entry.id).catch(() => null);
+    if (!member) continue;
+    items.push({
+      kind: "member",
+      id: member.id,
+      name: member.displayName || member.user.tag,
+      roleLabel: `Member • ${member.roles.highest?.name || "No role"}`,
+      mention: `<@${member.id}>`,
+      avatarUrl: member.displayAvatarURL({ extension: "png", size: 128 }),
+    });
+  }
+
+  return items;
+}
+
 const config = loadConfig();
 
 const commands = [
@@ -125,9 +218,9 @@ const commands = [
                 .setName("channel")
                 .setDescription("Logs channel")
                 .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-                .setRequired(true)
-            )
-        )
+                .setRequired(true),
+            ),
+        ),
     ),
 
   new SlashCommandBuilder()
@@ -143,8 +236,8 @@ const commands = [
             .setName("channel")
             .setDescription("Channel to send the panel in")
             .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-            .setRequired(true)
-        )
+            .setRequired(true),
+        ),
     ),
 
   new SlashCommandBuilder()
@@ -164,9 +257,9 @@ const commands = [
                 .setName("category")
                 .setDescription("Category channel")
                 .addChannelTypes(ChannelType.GuildCategory)
-                .setRequired(true)
-            )
-        )
+                .setRequired(true),
+            ),
+        ),
     )
     .addSubcommandGroup((group) =>
       group
@@ -180,9 +273,9 @@ const commands = [
               opt
                 .setName("target")
                 .setDescription("Role or member")
-                .setRequired(true)
-            )
-        )
+                .setRequired(true),
+            ),
+        ),
     ),
 
   new SlashCommandBuilder()
@@ -202,9 +295,9 @@ const commands = [
                 .setName("category")
                 .setDescription("Category channel")
                 .addChannelTypes(ChannelType.GuildCategory)
-                .setRequired(true)
-            )
-        )
+                .setRequired(true),
+            ),
+        ),
     )
     .addSubcommandGroup((group) =>
       group
@@ -218,9 +311,9 @@ const commands = [
               opt
                 .setName("target")
                 .setDescription("Role or member")
-                .setRequired(true)
-            )
-        )
+                .setRequired(true),
+            ),
+        ),
     ),
 
   new SlashCommandBuilder()
@@ -240,9 +333,9 @@ const commands = [
                 .setName("category")
                 .setDescription("Category channel")
                 .addChannelTypes(ChannelType.GuildCategory)
-                .setRequired(true)
-            )
-        )
+                .setRequired(true),
+            ),
+        ),
     )
     .addSubcommandGroup((group) =>
       group
@@ -256,9 +349,9 @@ const commands = [
               opt
                 .setName("target")
                 .setDescription("Role or member")
-                .setRequired(true)
-            )
-        )
+                .setRequired(true),
+            ),
+        ),
     ),
 
   new SlashCommandBuilder()
@@ -271,15 +364,15 @@ const commands = [
         .addChoices(
           { name: "Support", value: "support" },
           { name: "Staff App", value: "staffapp" },
-          { name: "Media App", value: "mediaapp" }
+          { name: "Media App", value: "mediaapp" },
         )
-        .setRequired(false)
+        .setRequired(false),
     )
     .addMentionableOption((opt) =>
       opt
         .setName("target")
         .setDescription("Role or member to add")
-        .setRequired(false)
+        .setRequired(false),
     ),
 
   new SlashCommandBuilder()
@@ -299,26 +392,26 @@ const commands = [
             .setName("channel")
             .setDescription("Channel")
             .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-            .setRequired(true)
+            .setRequired(true),
         )
         .addStringOption((opt) =>
           opt
             .setName("title")
             .setDescription("Embed title")
-            .setRequired(true)
+            .setRequired(true),
         )
         .addStringOption((opt) =>
           opt
             .setName("description")
             .setDescription("Embed description")
-            .setRequired(true)
+            .setRequired(true),
         )
         .addStringOption((opt) =>
           opt
             .setName("color")
             .setDescription("Embed color hex, for example #5865F2")
-            .setRequired(false)
-        )
+            .setRequired(false),
+        ),
     ),
 
   new SlashCommandBuilder()
@@ -334,14 +427,14 @@ const commands = [
             .setName("channel")
             .setDescription("Channel")
             .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-            .setRequired(true)
+            .setRequired(true),
         )
         .addStringOption((opt) =>
           opt
             .setName("message")
             .setDescription("Message content")
-            .setRequired(true)
-        )
+            .setRequired(true),
+        ),
     ),
 
   new SlashCommandBuilder()
@@ -352,13 +445,71 @@ const commands = [
       opt
         .setName("member")
         .setDescription("Member to ban")
-        .setRequired(true)
+        .setRequired(true),
     )
     .addStringOption((opt) =>
       opt
         .setName("reason")
         .setDescription("Reason for the ban")
-        .setRequired(false)
+        .setRequired(false),
+    ),
+
+  new SlashCommandBuilder()
+    .setName("staff")
+    .setDescription("Manage the live staff list for the website")
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+    .addSubcommand((sub) =>
+      sub
+        .setName("set")
+        .setDescription("Add a role or member to the staff list")
+        .addStringOption((opt) =>
+          opt
+            .setName("kind")
+            .setDescription("Choose role or member")
+            .addChoices(
+              { name: "Role", value: "role" },
+              { name: "Member", value: "member" },
+            )
+            .setRequired(true),
+        )
+        .addMentionableOption((opt) =>
+          opt
+            .setName("target")
+            .setDescription("Role or member mention")
+            .setRequired(true),
+        )
+        .addStringOption((opt) =>
+          opt
+            .setName("label")
+            .setDescription("Optional custom label")
+            .setRequired(false),
+        ),
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("remove")
+        .setDescription("Remove a staff entry")
+        .addStringOption((opt) =>
+          opt
+            .setName("kind")
+            .setDescription("Choose role or member")
+            .addChoices(
+              { name: "Role", value: "role" },
+              { name: "Member", value: "member" },
+            )
+            .setRequired(true),
+        )
+        .addStringOption((opt) =>
+          opt
+            .setName("id")
+            .setDescription("Role or member ID")
+            .setRequired(true),
+        ),
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("list")
+        .setDescription("Show current staff entries"),
     ),
 ].map((cmd) => cmd.toJSON());
 
@@ -408,7 +559,7 @@ function ticketPanelEmbed() {
         "",
         "Thanks.",
         "- G1yrex Support Team",
-      ].join("\n")
+      ].join("\n"),
     );
 }
 
@@ -425,7 +576,7 @@ function ticketPanelRow() {
     new ButtonBuilder()
       .setCustomId("ticket:create:mediaapp")
       .setLabel("Media App")
-      .setStyle(ButtonStyle.Success)
+      .setStyle(ButtonStyle.Success),
   );
 }
 
@@ -525,14 +676,14 @@ async function createTicketChannel(interaction, type, target = null) {
         target ? `Added: <@${target.id}>` : null,
         "",
         "Use the button below to close this ticket when you are done.",
-      ].filter(Boolean).join("\n")
+      ].filter(Boolean).join("\n"),
     );
 
   const closeRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("ticket:close")
       .setLabel("Close Ticket")
-      .setStyle(ButtonStyle.Danger)
+      .setStyle(ButtonStyle.Danger),
   );
 
   await channel.send({
@@ -552,9 +703,9 @@ async function createTicketChannel(interaction, type, target = null) {
           `Channel: ${channel}`,
           `Opened by: <@${member.id}>`,
           target ? `Added: <@${target.id}>` : null,
-        ].filter(Boolean).join("\n")
+        ].filter(Boolean).join("\n"),
       )
-      .setTimestamp()
+      .setTimestamp(),
   );
 
   return channel;
@@ -576,9 +727,9 @@ async function closeCurrentTicket(channel, closedByTag) {
         [
           `Channel: ${channel}`,
           `Closed by: ${closedByTag}`,
-        ].join("\n")
+        ].join("\n"),
       )
-      .setTimestamp()
+      .setTimestamp(),
   );
 
   setTimeout(() => {
@@ -776,6 +927,63 @@ client.on("interactionCreate", async (interaction) => {
         ephemeral: true,
       });
     }
+
+    if (interaction.commandName === "staff") {
+      const sub = interaction.options.getSubcommand();
+
+      if (sub === "set") {
+        const kind = interaction.options.getString("kind", true);
+        const target = interaction.options.getMentionable("target", true);
+        const label = interaction.options.getString("label") || null;
+        const isRole = !!target.permissions;
+
+        if (kind === "role" && !isRole) {
+          return interaction.reply({ content: "Please choose a role for kind = role.", ephemeral: true });
+        }
+        if (kind === "member" && isRole) {
+          return interaction.reply({ content: "Please choose a user/member for kind = member.", ephemeral: true });
+        }
+
+        if (kind === "member") {
+          const member = await interaction.guild.members.fetch(target.id).catch(() => null);
+          if (!member) {
+            return interaction.reply({ content: "That member is not in this server.", ephemeral: true });
+          }
+          const saved = await upsertStaffEntry(interaction.guild, "member", member, interaction.user.tag);
+          if (label) saved.name = label;
+        } else {
+          const saved = await upsertStaffEntry(interaction.guild, "role", target, interaction.user.tag);
+          if (label) saved.name = label;
+        }
+
+        return interaction.reply({
+          content: `Staff entry saved for ${kind === "role" ? `<@&${target.id}>` : `<@${target.id}>`}.`,
+          ephemeral: true,
+        });
+      }
+
+      if (sub === "remove") {
+        const kind = interaction.options.getString("kind", true);
+        const id = interaction.options.getString("id", true);
+        const changed = removeStaffEntry(interaction.guild.id, kind, id);
+        return interaction.reply({
+          content: changed ? "Staff entry removed." : "No matching staff entry was found.",
+          ephemeral: true,
+        });
+      }
+
+      if (sub === "list") {
+        const cfg = ensureGuildConfig(interaction.guild.id);
+        const lines = cfg.staffEntries.length
+          ? cfg.staffEntries.map((entry) => `• ${entry.kind.toUpperCase()}: ${entry.id} (${entry.name || "Unnamed"})`)
+          : ["No staff entries saved yet."];
+        const embed = new EmbedBuilder()
+          .setColor(0x5865f2)
+          .setTitle("Staff Entries")
+          .setDescription(lines.join("\n"));
+        return interaction.reply({ embeds: [embed], ephemeral: true });
+      }
+    }
   } catch (error) {
     console.error(error);
 
@@ -785,6 +993,54 @@ client.on("interactionCreate", async (interaction) => {
     }
     return interaction.reply({ content: message, ephemeral: true }).catch(() => {});
   }
+});
+
+const app = express();
+app.disable("x-powered-by");
+app.use(express.json());
+app.use(express.static(__dirname, {
+  extensions: ["html"],
+  maxAge: "5m",
+}));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+app.get("/api/staff", async (req, res) => {
+  try {
+    const guildId = req.query.guildId || getPrimaryGuildId();
+    if (!guildId) {
+      return res.json({ guildId: null, staff: [] });
+    }
+
+    const guild = await client.guilds.fetch(guildId).catch(() => null);
+    if (!guild) {
+      return res.json({ guildId, staff: [] });
+    }
+
+    const staff = await buildStaffPayload(guild);
+    return res.json({ guildId, staff });
+  } catch (error) {
+    console.error("Staff API error:", error);
+    return res.status(500).json({ error: "Failed to load staff." });
+  }
+});
+
+app.get("/api/status", async (req, res) => {
+  const guildId = req.query.guildId || getPrimaryGuildId();
+  const guild = guildId ? await client.guilds.fetch(guildId).catch(() => null) : null;
+  const cfg = guild ? ensureGuildConfig(guild.id) : null;
+  res.json({
+    ok: true,
+    guildId,
+    botReady: client.isReady(),
+    staffEntries: cfg?.staffEntries?.length || 0,
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Web server listening on port ${PORT}`);
 });
 
 client.login(TOKEN);
