@@ -65,6 +65,16 @@
       to { transform: translate3d(1.5%, 1%, 0) scale(1.12); }
     }
 
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      display: block;
+      pointer-events: none;
+    }
+
     a { color: inherit; text-decoration: none; }
     img { display: block; max-width: 100%; }
     .container { width: min(var(--container), calc(100% - 32px)); margin: 0 auto; }
@@ -444,6 +454,65 @@
       50% { transform: translateX(8%); opacity:1; }
     }
 
+    .smp-box { min-height: auto; }
+    .ip-box {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(124,140,255,.2);
+    }
+    .ip-box code {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+      font-size: 13.5px;
+      color: #eaf0ff;
+      letter-spacing: .2px;
+    }
+    .copy-btn {
+      flex: 0 0 auto;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #08111f;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: transform var(--speed) ease, filter var(--speed) ease;
+    }
+    .copy-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    .copy-btn.copied { background: linear-gradient(135deg, #57f287, #7cf4d4); }
+
+    .cmd-grid {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .cmd-chip {
+      padding: 9px 13px;
+      border-radius: 999px;
+      background: rgba(124,140,255,.1);
+      border: 1px solid rgba(124,140,255,.2);
+      color: #dfe5ff;
+      font-family: "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      transition: transform var(--speed) ease, background var(--speed) ease, border-color var(--speed) ease;
+    }
+    .cmd-chip:hover {
+      transform: translateY(-2px);
+      background: rgba(124,140,255,.18);
+      border-color: rgba(124,140,255,.32);
+    }
+
 
 .rank-grid {
   display: grid;
@@ -721,6 +790,7 @@
   </style>
 </head>
 <body>
+  <canvas id="bg-canvas"></canvas>
   <header class="topbar">
     <div class="container">
       <nav class="nav glass">
@@ -750,8 +820,7 @@
           <div class="eyebrow"><i></i> G1yrex's Hub • smooth premium layout</div>
           <h1><span class="gradient">A clean, modern hub</span> for G1yrex's community.</h1>
           <p class="subtext">
-            Home is designed to feel premium and simple. Staff, Smp, Ranks, and About each stay separate
-            with their own information. No extra photos, no clutter, just a smooth layout.
+            I Have Built This Community For My Followers Subscribers
           </p>
 
           <div class="hero-actions">
@@ -868,29 +937,68 @@
         <div class="section-head reveal">
           <div>
             <h2>Smp</h2>
-            <p class="lead">The SMP section is separate and kept clean. It currently shows <strong>Coming Soon</strong> so the page stays premium instead of empty.</p>
+            <p class="lead">Everything you need to join the SMP — server IP, essential commands, and world/border details, all in one clean place.</p>
           </div>
-          <div class="tag"><span class="dot"></span> Coming soon</div>
+          <div class="tag"><span class="dot"></span> Live</div>
         </div>
 
         <div class="coming-grid">
-          <article class="coming-card reveal">
-            <div class="coming-pill">Coming Soon</div>
-            <h3>SMP World</h3>
-            <p>Survival gameplay, bases, trading, shops, and community builds can be added here later.</p>
-            <div class="coming-bar"><span></span></div>
+          <article class="coming-card reveal smp-box">
+            <div class="coming-pill">Server IP</div>
+            <h3>Join the SMP</h3>
+            <div class="ip-box">
+              <code id="smpIp">G1yrexSmp.royalnode.cloud</code>
+              <button type="button" class="copy-btn" id="copyIpBtn" aria-label="Copy server IP">Copy</button>
+            </div>
+            <div class="info-list">
+              <div class="info-item">
+                <div class="icon">☕</div>
+                <div><strong>Java Edition</strong><div class="small">Connect using the IP above in Multiplayer.</div></div>
+              </div>
+              <div class="info-item">
+                <div class="icon">🟢</div>
+                <div><strong>24/7 Uptime</strong><div class="small">Server stays online around the clock.</div></div>
+              </div>
+              <div class="info-item">
+                <div class="icon">🛡️</div>
+                <div><strong>Anti-Cheat Protected</strong><div class="small">Fair survival gameplay for everyone.</div></div>
+              </div>
+            </div>
           </article>
-          <article class="coming-card reveal">
-            <div class="coming-pill">Coming Soon</div>
-            <h3>Season Events</h3>
-            <p>Season launches, resets, and special events can be displayed in a polished future update.</p>
-            <div class="coming-bar"><span style="width:62%"></span></div>
+
+          <article class="coming-card reveal smp-box">
+            <div class="coming-pill">Commands</div>
+            <h3>Essential Commands</h3>
+            <p>Use these in-game commands to get around the SMP faster.</p>
+            <div class="cmd-grid">
+              <span class="cmd-chip">/shop</span>
+              <span class="cmd-chip">/rtp</span>
+              <span class="cmd-chip">/home</span>
+              <span class="cmd-chip">/auctionhouse</span>
+              <span class="cmd-chip">/order</span>
+              <span class="cmd-chip">/spawn</span>
+              <span class="cmd-chip">/tpa</span>
+              <span class="cmd-chip">/warp</span>
+            </div>
           </article>
-          <article class="coming-card reveal">
-            <div class="coming-pill">Coming Soon</div>
-            <h3>SMP Rules</h3>
-            <p>Claim rules, player rules, and community guidelines can live in this section when ready.</p>
-            <div class="coming-bar"><span style="width:48%"></span></div>
+
+          <article class="coming-card reveal smp-box">
+            <div class="coming-pill">World Details</div>
+            <h3>Border &amp; World</h3>
+            <div class="info-list">
+              <div class="info-item">
+                <div class="icon">🗺️</div>
+                <div><strong>World Border</strong><div class="small">10,000 x 10,000 blocks</div></div>
+              </div>
+              <div class="info-item">
+                <div class="icon">🔒</div>
+                <div><strong>The End</strong><div class="small">Closed</div></div>
+              </div>
+              <div class="info-item">
+                <div class="icon">🌍</div>
+                <div><strong>World Type</strong><div class="small">Survival SMP</div></div>
+              </div>
+            </div>
           </article>
         </div>
       </div>
@@ -1088,6 +1196,136 @@
   </main>
 
   <script>
+    (function () {
+      const canvas = document.getElementById('bg-canvas');
+      const ctx = canvas.getContext('2d');
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let width, height, dpr;
+      let orbs = [];
+      let mouseX = 0, mouseY = 0, targetMouseX = 0, targetMouseY = 0;
+
+      const palette = [
+        { r: 124, g: 140, b: 255 },  // accent
+        { r: 124, g: 244, b: 212 },  // accent2
+        { r: 255, g: 123, b: 149 },  // danger, used sparingly
+        { r: 160, g: 150, b: 255 },
+      ];
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function makeOrb(i) {
+        const isBig = i % 5 === 0;
+        const color = palette[i % palette.length];
+        const radius = isBig ? rand(90, 170) : rand(28, 70);
+        return {
+          x: rand(0, width),
+          y: rand(0, height),
+          vx: rand(-0.28, 0.28),
+          vy: rand(-0.28, 0.28),
+          radius,
+          baseRadius: radius,
+          color,
+          alpha: isBig ? rand(0.10, 0.18) : rand(0.16, 0.30),
+          pulseSpeed: rand(0.9, 2.0),
+          pulseOffset: rand(0, Math.PI * 2),
+          drift: rand(1.2, 2.6),
+        };
+      }
+
+      function rand(min, max) { return Math.random() * (max - min) + min; }
+
+      function init() {
+        resize();
+        const count = width < 700 ? 10 : width < 1200 ? 16 : 22;
+        orbs = Array.from({ length: count }, (_, i) => makeOrb(i));
+      }
+
+      function step(time) {
+        ctx.clearRect(0, 0, width, height);
+
+        // smooth mouse parallax
+        mouseX += (targetMouseX - mouseX) * 0.05;
+        mouseY += (targetMouseY - mouseY) * 0.05;
+
+        for (const orb of orbs) {
+          if (!prefersReducedMotion) {
+            orb.x += orb.vx * orb.drift;
+            orb.y += orb.vy * orb.drift;
+
+            if (orb.x < -orb.radius) orb.x = width + orb.radius;
+            if (orb.x > width + orb.radius) orb.x = -orb.radius;
+            if (orb.y < -orb.radius) orb.y = height + orb.radius;
+            if (orb.y > height + orb.radius) orb.y = -orb.radius;
+
+            const pulse = Math.sin(time * 0.001 * orb.pulseSpeed + orb.pulseOffset);
+            orb.radius = orb.baseRadius + pulse * (orb.baseRadius * 0.08);
+          }
+
+          const parallax = orb.baseRadius / 800;
+          const px = orb.x + mouseX * parallax * 40;
+          const py = orb.y + mouseY * parallax * 40;
+
+          const grad = ctx.createRadialGradient(px, py, 0, px, py, orb.radius);
+          const { r, g, b } = orb.color;
+          grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${orb.alpha})`);
+          grad.addColorStop(0.55, `rgba(${r}, ${g}, ${b}, ${orb.alpha * 0.35})`);
+          grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+          ctx.beginPath();
+          ctx.fillStyle = grad;
+          ctx.arc(px, py, orb.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        requestAnimationFrame(step);
+      }
+
+      window.addEventListener('resize', () => {
+        resize();
+      });
+
+      window.addEventListener('pointermove', (e) => {
+        targetMouseX = (e.clientX / width - 0.5) * 2;
+        targetMouseY = (e.clientY / height - 0.5) * 2;
+      });
+
+      init();
+      requestAnimationFrame(step);
+    })();
+
+    const copyIpBtn = document.getElementById('copyIpBtn');
+    if (copyIpBtn) {
+      copyIpBtn.addEventListener('click', async () => {
+        const ip = document.getElementById('smpIp').textContent.trim();
+        try {
+          await navigator.clipboard.writeText(ip);
+        } catch (err) {
+          const temp = document.createElement('textarea');
+          temp.value = ip;
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          document.body.removeChild(temp);
+        }
+        copyIpBtn.textContent = 'Copied!';
+        copyIpBtn.classList.add('copied');
+        setTimeout(() => {
+          copyIpBtn.textContent = 'Copy';
+          copyIpBtn.classList.remove('copied');
+        }, 1800);
+      });
+    }
+
     const staffGrid = document.getElementById('staffGrid');
     const staffStatus = document.getElementById('staffStatus');
     const navLinks = Array.from(document.querySelectorAll('.navlinks a'));
