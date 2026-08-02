@@ -16,6 +16,7 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  AttachmentBuilder,
 } = require("discord.js");
 
 const TOKEN = process.env.TOKEN;
@@ -70,6 +71,12 @@ function ensureGuildConfig(guildId) {
       giveaways: {},
       events: {},
       afk: {},
+      countingChannelId: null,
+      countingNext: 1,
+      autoRoleId: null,
+      welcomeChannelId: null,
+      restrictedWords: [],
+      violations: { link: {}, word: {} },
       staff: {
         notes: {},
         warnings: {},
@@ -94,6 +101,16 @@ function ensureGuildConfig(guildId) {
   if (!g.giveaways || typeof g.giveaways !== "object") g.giveaways = {};
   if (!g.events || typeof g.events !== "object") g.events = {};
   if (!g.afk || typeof g.afk !== "object") g.afk = {};
+  if (typeof g.countingChannelId === "undefined") g.countingChannelId = null;
+  if (typeof g.countingNext !== "number" || g.countingNext < 1) g.countingNext = 1;
+  if (typeof g.autoRoleId === "undefined") g.autoRoleId = null;
+  if (typeof g.welcomeChannelId === "undefined") g.welcomeChannelId = null;
+  if (!Array.isArray(g.restrictedWords)) g.restrictedWords = [];
+  if (!g.violations || typeof g.violations !== "object") g.violations = { link: {}, word: {} };
+  else {
+    if (!g.violations.link) g.violations.link = {};
+    if (!g.violations.word) g.violations.word = {};
+  }
   if (!g.staff || typeof g.staff !== "object") {
     g.staff = { notes: {}, warnings: {}, applicationsOpen: true, applications: [], pay: {}, modeOn: {}, chatChannelId: null, logsChannelId: null };
   } else {
@@ -408,6 +425,48 @@ function createEventRecord(guildId, data) {
 function getEvent(guildId, id) {
   const cfg = ensureGuildConfig(guildId);
   return cfg.events[id] || null;
+}
+
+// ---- Anti-link & restricted words ----
+
+const LINK_REGEX = /\b((https?:\/\/|www\.)\S+|discord(?:\.gg|app\.com\/invite)\/\S+|[a-zA-Z0-9-]+\.(com|net|org|io|gg|xyz|co|me|link|gift|dev)(\/\S*)?)\b/i;
+
+function containsLink(content) {
+  return LINK_REGEX.test(content || "");
+}
+
+function findRestrictedWord(guildId, content) {
+  const cfg = ensureGuildConfig(guildId);
+  if (!cfg.restrictedWords.length) return null;
+  const lower = String(content || "").toLowerCase();
+  return cfg.restrictedWords.find((w) => lower.includes(w)) || null;
+}
+
+// Deletes the offending message; first offense of a given type = warning,
+// second (and later) = 1 hour timeout, then the counter resets.
+async function applyAutoModeration(message, violationType, reasonLabel) {
+  const cfg = ensureGuildConfig(message.guild.id);
+  const bucket = cfg.violations[violationType];
+  const count = (bucket[message.author.id] || 0) + 1;
+  bucket[message.author.id] = count;
+  scheduleSave();
+
+  await message.delete().catch(() => {});
+
+  if (count === 1) {
+    addWarning(message.guild.id, message.author.id, reasonLabel, client.user.tag);
+    await message.channel.send(
+      `⚠️ ${message.author}, ${reasonLabel} isn't allowed here. This is your warning — next time you'll be timed out for 1 hour.`,
+    ).catch(() => {});
+  } else {
+    const member = await message.guild.members.fetch(message.author.id).catch(() => null);
+    if (member?.moderatable) {
+      await member.timeout(3_600_000, reasonLabel).catch(() => {});
+      await message.channel.send(`⏱️ ${message.author} has been timed out for 1 hour for repeatedly ${reasonLabel}.`).catch(() => {});
+    }
+    bucket[message.author.id] = 0;
+    scheduleSave();
+  }
 }
 
 function normalizeTicketType(input) {
@@ -1281,6 +1340,78 @@ const commands = [
         )
         .setRequired(false),
     ),
+  // ---------------- Counting / Autorole / Welcome ----------------
+  new SlashCommandBuilder()
+    .setName("cchannel")
+    .setDescription("Manage the counting channel")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addSubcommand((sub) =>
+      sub
+        .setName("set")
+        .setDescription("Set the counting channel")
+        .addChannelOption((opt) =>
+          opt
+            .setName("channel")
+            .setDescription("Channel where members count")
+            .addChannelTypes(ChannelType.GuildText)
+            .setRequired(true),
+        ),
+    ),
+
+  new SlashCommandBuilder()
+    .setName("autorole")
+    .setDescription("Manage the auto-role given to new members")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addSubcommand((sub) =>
+      sub
+        .setName("set")
+        .setDescription("Set the auto-role")
+        .addRoleOption((opt) => opt.setName("role").setDescription("Role to auto-assign").setRequired(true)),
+    ),
+
+  new SlashCommandBuilder()
+    .setName("welcome")
+    .setDescription("Manage welcome messages")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addSubcommandGroup((group) =>
+      group
+        .setName("channel")
+        .setDescription("Set the welcome channel")
+        .addSubcommand((sub) =>
+          sub
+            .setName("set")
+            .setDescription("Set the channel where welcome messages are posted")
+            .addChannelOption((opt) =>
+              opt
+                .setName("channel")
+                .setDescription("Welcome channel")
+                .addChannelTypes(ChannelType.GuildText)
+                .setRequired(true),
+            ),
+        ),
+    ),
+  new SlashCommandBuilder()
+    .setName("restricted")
+    .setDescription("Manage restricted words")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addSubcommandGroup((group) =>
+      group
+        .setName("words")
+        .setDescription("Manage the restricted words list")
+        .addSubcommand((sub) =>
+          sub
+            .setName("add")
+            .setDescription("Add a restricted word")
+            .addStringOption((opt) => opt.setName("word").setDescription("Word to restrict").setRequired(true)),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("remove")
+            .setDescription("Remove a restricted word")
+            .addStringOption((opt) => opt.setName("word").setDescription("Word to remove").setRequired(true)),
+        )
+        .addSubcommand((sub) => sub.setName("list").setDescription("List all restricted words")),
+    ),
 ].map((cmd) => cmd.toJSON());
 
 const client = new Client({
@@ -1291,6 +1422,7 @@ const client = new Client({
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.MessageContent,
   ],
   partials: [Partials.Channel, Partials.Message, Partials.Reaction],
 });
@@ -1331,6 +1463,39 @@ client.on("voiceStateUpdate", (oldState, newState) => {
 
 client.on("messageCreate", async (message) => {
   if (!message.guild || message.author.bot) return;
+
+  // ---- Counting channel: numbers only, must be in sequence ----
+  const cfgForCounting = ensureGuildConfig(message.guild.id);
+  if (cfgForCounting.countingChannelId && message.channel.id === cfgForCounting.countingChannelId) {
+    const content = message.content.trim();
+    const isPureNumber = /^\d+$/.test(content);
+    const expected = cfgForCounting.countingNext;
+
+    if (!isPureNumber || Number(content) !== expected) {
+      await message.delete().catch(() => {});
+      return;
+    }
+
+    await message.react("✅").catch(() => {});
+    cfgForCounting.countingNext = expected + 1;
+    scheduleSave();
+    return;
+  }
+
+  // ---- Anti-link & restricted words (mods/admins are exempt) ----
+  const isExempt = message.member?.permissions?.has(PermissionFlagsBits.ManageMessages);
+  if (!isExempt) {
+    if (containsLink(message.content)) {
+      await applyAutoModeration(message, "link", "posting links");
+      return;
+    }
+    const badWord = findRestrictedWord(message.guild.id, message.content);
+    if (badWord) {
+      await applyAutoModeration(message, "word", "using a restricted word");
+      return;
+    }
+  }
+
   addMessage(message.guild.id, message.author.id, message.channel.id);
 
   // Leveling: small XP per message, cooldown handled inside addXp.
@@ -1573,6 +1738,35 @@ async function closeCurrentTicket(channel, closedByTag) {
 
   return true;
 }
+
+client.on("guildMemberAdd", async (member) => {
+  const cfg = ensureGuildConfig(member.guild.id);
+
+  // ---- Auto-role ----
+  if (cfg.autoRoleId) {
+    const role = await member.guild.roles.fetch(cfg.autoRoleId).catch(() => null);
+    if (role) {
+      await member.roles.add(role).catch((err) => console.error("Auto-role assign failed:", err));
+    }
+  }
+
+  // ---- Welcome message ----
+  if (cfg.welcomeChannelId) {
+    const channel = await member.guild.channels.fetch(cfg.welcomeChannelId).catch(() => null);
+    if (channel) {
+      const welcomeImagePath = path.join(__dirname, "assets", "welcome.jpg");
+      const files = fs.existsSync(welcomeImagePath) ? [new AttachmentBuilder(welcomeImagePath, { name: "welcome.jpg" })] : [];
+
+      const embed = new EmbedBuilder()
+        .setColor(0x3498db)
+        .setTitle("Welcome To G1yrex Empire 💙")
+        .setDescription("Ownership: G1yrexmc <:Youtube:1505579402983903333>")
+        .setImage(files.length ? "attachment://welcome.jpg" : null);
+
+      await channel.send({ content: `${member}`, embeds: [embed], files }).catch((err) => console.error("Welcome message failed:", err));
+    }
+  }
+});
 
 client.once("ready", async () => {
   try {
@@ -2581,7 +2775,7 @@ client.on("interactionCreate", async (interaction) => {
         tags: { title: "🏷️ Tags", commands: ["/tag create", "/tag edit", "/tag delete", "/tag list", "/tag info", "/tag search"] },
         events: { title: "📅 Events", commands: ["/event create", "/event edit", "/event cancel", "/event join", "/event leave", "/event winners"] },
         staff: { title: "👮 Staff+", commands: ["/staffmode", "/staffchat", "/staffnote", "/staffwarn", "/staffhistory", "/staffactivity", "/staffmeeting", "/staffapplications", "/staffpay", "/stafflogs"] },
-        tickets: { title: "🎫 Tickets", commands: ["/ticketlogs", "/ticketpanel", "/ticketsupp", "/ticketstaffapp", "/ticketmediaapp", "/open", "/close", "/staff", "/log check"] },
+        tickets: { title: "🎫 Tickets & Setup", commands: ["/ticketlogs", "/ticketpanel", "/ticketsupp", "/ticketstaffapp", "/ticketmediaapp", "/open", "/close", "/staff", "/log check", "/cchannel set", "/autorole set", "/welcome channel set", "/restricted words add", "/restricted words remove", "/restricted words list"] },
       };
 
       if (category && categories[category]) {
@@ -2598,6 +2792,78 @@ client.on("interactionCreate", async (interaction) => {
         embed.addFields({ name: cat.title, value: cat.commands.join(", ") });
       }
       return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
+    // ---------------- Counting / Autorole / Welcome ----------------
+    if (interaction.commandName === "cchannel") {
+      const sub = interaction.options.getSubcommand();
+      if (sub === "set") {
+        const channel = interaction.options.getChannel("channel", true);
+        const cfg = ensureGuildConfig(interaction.guild.id);
+        cfg.countingChannelId = channel.id;
+        cfg.countingNext = 1;
+        scheduleSave();
+        return interaction.reply({
+          content: `🔢 Counting channel set to ${channel}. Members should start counting from **1**. Anything that isn't the next correct number gets deleted automatically.`,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (interaction.commandName === "autorole") {
+      const sub = interaction.options.getSubcommand();
+      if (sub === "set") {
+        const role = interaction.options.getRole("role", true);
+        const cfg = ensureGuildConfig(interaction.guild.id);
+        cfg.autoRoleId = role.id;
+        scheduleSave();
+        return interaction.reply({ content: `✅ New members will now automatically receive the ${role} role.`, ephemeral: true });
+      }
+    }
+
+    if (interaction.commandName === "welcome") {
+      const group = interaction.options.getSubcommandGroup();
+      const sub = interaction.options.getSubcommand();
+      if (group === "channel" && sub === "set") {
+        const channel = interaction.options.getChannel("channel", true);
+        const cfg = ensureGuildConfig(interaction.guild.id);
+        cfg.welcomeChannelId = channel.id;
+        scheduleSave();
+        return interaction.reply({ content: `👋 Welcome messages will now be posted in ${channel}.`, ephemeral: true });
+      }
+    }
+
+    if (interaction.commandName === "restricted") {
+      const group = interaction.options.getSubcommandGroup();
+      const sub = interaction.options.getSubcommand();
+      const cfg = ensureGuildConfig(interaction.guild.id);
+
+      if (group === "words") {
+        if (sub === "add") {
+          const word = interaction.options.getString("word", true).trim().toLowerCase();
+          if (cfg.restrictedWords.includes(word)) {
+            return interaction.reply({ content: "That word is already restricted.", ephemeral: true });
+          }
+          cfg.restrictedWords.push(word);
+          scheduleSave();
+          return interaction.reply({ content: `🚫 Added \`${word}\` to the restricted words list.`, ephemeral: true });
+        }
+
+        if (sub === "remove") {
+          const word = interaction.options.getString("word", true).trim().toLowerCase();
+          if (!cfg.restrictedWords.includes(word)) {
+            return interaction.reply({ content: "That word isn't on the list.", ephemeral: true });
+          }
+          cfg.restrictedWords = cfg.restrictedWords.filter((w) => w !== word);
+          scheduleSave();
+          return interaction.reply({ content: `✅ Removed \`${word}\` from the restricted words list.`, ephemeral: true });
+        }
+
+        if (sub === "list") {
+          const list = cfg.restrictedWords.length ? cfg.restrictedWords.map((w) => `\`${w}\``).join(", ") : "No restricted words set.";
+          return interaction.reply({ content: list, ephemeral: true });
+        }
+      }
     }
   } catch (error) {
     console.error(error);
