@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>G1yrex's Hub</title>
   <meta name="description" content="G1yrex's Hub - a premium Minecraft community website with Home, Staff, SMP, Ranks, and About sections." />
+  <meta name="theme-color" content="#05070d" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%237c8cff'/%3E%3Cstop offset='100%25' stop-color='%237cf4d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='26' fill='%2305070d'/%3E%3Crect x='6' y='6' width='88' height='88' rx='22' fill='url(%23g)' fill-opacity='0.18'/%3E%3Ctext x='50' y='66' font-size='54' font-family='Georgia, serif' font-weight='700' text-anchor='middle' fill='url(%23g)'%3EG%3C/text%3E%3C/svg%3E" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="G1yrex's Hub" />
+  <meta property="og:description" content="A premium Minecraft community hub — Staff, SMP, Ranks, and more." />
+  <meta property="og:image" content="/logo.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="G1yrex's Hub" />
+  <meta name="twitter:description" content="A premium Minecraft community hub — Staff, SMP, Ranks, and more." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #05070d;
@@ -17,23 +32,56 @@
       --soft: rgba(255,255,255,0.06);
       --accent: #7c8cff;
       --accent2: #7cf4d4;
+      --gold: #e8c874;
+      --gold-soft: #f3e2ac;
       --danger: #ff7b95;
       --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
       --radius: 26px;
       --radius-sm: 18px;
       --container: 1180px;
       --speed: 280ms;
+      --font-display: "Playfair Display", Georgia, serif;
+      --font-body: "Manrope", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+
+    ::selection {
+      background: rgba(232,200,116,.35);
+      color: #fff;
+    }
+
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: #05070d; }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--gold), var(--accent));
+      border-radius: 999px;
+      border: 2px solid #05070d;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--gold-soft), var(--accent2)); }
+    html { scrollbar-color: var(--gold) #05070d; scrollbar-width: thin; }
+
+    #scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      z-index: 50;
+      background: linear-gradient(90deg, var(--gold), var(--accent), var(--accent2));
+      box-shadow: 0 0 12px rgba(232,200,116,.6);
+      transition: width 80ms linear;
+      pointer-events: none;
+    }
+
     body {
       margin: 0;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: var(--font-body);
       color: var(--text);
       background:
         radial-gradient(circle at 15% 15%, rgba(124,140,255,.22), transparent 32%),
         radial-gradient(circle at 85% 10%, rgba(124,244,212,.14), transparent 28%),
+        radial-gradient(circle at 50% 0%, rgba(232,200,116,.05), transparent 40%),
         radial-gradient(circle at 80% 85%, rgba(124,140,255,.12), transparent 30%),
         linear-gradient(180deg, #04060b 0%, #090d18 48%, #04060b 100%);
       min-height: 100vh;
@@ -110,8 +158,8 @@
       height: 42px;
       border-radius: 14px;
       object-fit: cover;
-      border: 1px solid rgba(255,255,255,.16);
-      box-shadow: 0 10px 24px rgba(0,0,0,.28);
+      border: 1px solid rgba(232,200,116,.35);
+      box-shadow: 0 10px 24px rgba(0,0,0,.28), 0 0 0 3px rgba(232,200,116,.08);
     }
     .brand strong { display: block; font-size: 15px; letter-spacing: .2px; }
     .brand span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
@@ -132,8 +180,8 @@
     .navlinks a:hover,
     .navlinks a.active {
       color: var(--text);
-      background: rgba(255,255,255,.06);
-      border-color: rgba(255,255,255,.1);
+      background: rgba(232,200,116,.08);
+      border-color: rgba(232,200,116,.25);
       transform: translateY(-1px);
     }
 
@@ -151,35 +199,52 @@
       gap: 18px;
       margin-bottom: 18px;
     }
+    .section-head h2 {
+      position: relative;
+      padding-top: 18px;
+    }
+    .section-head h2::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 1px;
+      width: 46px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+    }
     .eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 8px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(124,140,255,.22);
-      background: rgba(124,140,255,.08);
-      color: #dfe5ff;
+      border: 1px solid rgba(232,200,116,.28);
+      background: rgba(232,200,116,.07);
+      color: #f1e6c8;
       font-size: 12px;
       letter-spacing: .2px;
     }
     .eyebrow i {
       width: 8px; height: 8px; border-radius: 999px; display: inline-block;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      box-shadow: 0 0 16px rgba(124,140,255,.8);
+      background: linear-gradient(135deg, var(--gold), var(--accent2));
+      box-shadow: 0 0 16px rgba(232,200,116,.8);
     }
 
     h1, h2, h3, p { margin: 0; }
+    h1, h2 {
+      font-family: var(--font-display);
+      font-weight: 700;
+    }
     h1 {
-      font-size: clamp(42px, 6.5vw, 74px);
-      line-height: .95;
-      letter-spacing: -1.5px;
+      font-size: clamp(42px, 6.5vw, 76px);
+      line-height: .98;
+      letter-spacing: -1px;
       margin-top: 18px;
     }
     h2 {
-      font-size: clamp(28px, 4vw, 40px);
-      line-height: 1.02;
-      letter-spacing: -0.8px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.05;
+      letter-spacing: -0.4px;
     }
     h3 { font-size: 18px; letter-spacing: -.2px; }
     .lead, .subtext, .muted { color: var(--muted); }
@@ -191,17 +256,33 @@
     }
     .lead { max-width: 68ch; line-height: 1.7; margin-top: 8px; }
     .gradient {
-      background: linear-gradient(135deg, #ffffff 0%, #c3ccff 36%, #7cf4d4 100%);
+      background: linear-gradient(100deg, #ffffff 0%, var(--gold-soft) 28%, #c3ccff 58%, #7cf4d4 100%);
+      background-size: 220% 100%;
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+      animation: shimmer 7s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
 
     .glass, .panel, .card, .coming-card, .info-card, .staff-card, .footer {
+      position: relative;
       backdrop-filter: blur(16px);
       background: var(--card);
       border: 1px solid var(--line);
       box-shadow: var(--shadow);
+    }
+    .glass::before, .panel::before, .card::before, .coming-card::before, .info-card::before, .staff-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 14px; right: 14px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(232,200,116,.55), transparent);
+      opacity: .55;
+      pointer-events: none;
     }
 
     .hero {
@@ -222,6 +303,21 @@
     .hero-card { padding: 30px; }
     .hero-aside { padding: 22px; }
 
+    .spotlight {
+      --spot-x: 50%;
+      --spot-y: 0%;
+    }
+    .spotlight::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(500px circle at var(--spot-x) var(--spot-y), rgba(232,200,116,.10), transparent 60%);
+      pointer-events: none;
+      transition: opacity var(--speed) ease;
+      opacity: 0;
+    }
+    .spotlight:hover::after { opacity: 1; }
+
     .hero-actions {
       display: flex;
       flex-wrap: wrap;
@@ -233,22 +329,36 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      padding: 13px 18px;
+      padding: 13px 20px;
       border-radius: 999px;
       border: 1px solid transparent;
-      transition: transform var(--speed) ease, filter var(--speed) ease, background var(--speed) ease, border-color var(--speed) ease;
-      font-weight: 600;
+      transition: transform var(--speed) ease, filter var(--speed) ease, background var(--speed) ease, border-color var(--speed) ease, box-shadow var(--speed) ease;
+      font-weight: 700;
+      letter-spacing: .1px;
+      position: relative;
+      overflow: hidden;
     }
-    .btn:hover { transform: translateY(-2px); filter: brightness(1.04); }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
     .btn.primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #08111f;
+      background: linear-gradient(135deg, var(--gold), var(--accent) 55%, var(--accent2));
+      color: #0a0f1c;
+      box-shadow: 0 10px 30px rgba(232,200,116,.22), 0 10px 30px rgba(124,140,255,.18);
     }
+    .btn.primary::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,.55) 42%, transparent 60%);
+      transform: translateX(-120%);
+      transition: transform 650ms ease;
+    }
+    .btn.primary:hover::after { transform: translateX(120%); }
     .btn.secondary {
       background: rgba(255,255,255,.05);
       color: var(--text);
-      border-color: rgba(255,255,255,.09);
+      border-color: rgba(232,200,116,.18);
     }
+    .btn.secondary:hover { border-color: rgba(232,200,116,.4); }
 
     .mini-grid {
       display: grid;
@@ -325,8 +435,9 @@
     }
     .info-card:hover, .coming-card:hover, .staff-card:hover {
       transform: translateY(-3px);
-      border-color: rgba(124,140,255,.25);
+      border-color: rgba(232,200,116,.28);
       background: rgba(255,255,255,.06);
+      box-shadow: 0 20px 60px rgba(232,200,116,.08), var(--shadow);
     }
     .info-card p, .coming-card p { color: var(--muted); line-height: 1.65; margin-top: 10px; }
 
@@ -351,8 +462,8 @@
     }
     .dot {
       width: 8px; height: 8px; border-radius: 999px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      box-shadow: 0 0 14px rgba(124,140,255,.75);
+      background: linear-gradient(135deg, var(--gold), var(--accent2));
+      box-shadow: 0 0 14px rgba(232,200,116,.75);
     }
 
     .staff-grid {
@@ -525,19 +636,20 @@
   border-radius: 24px;
   padding: 22px;
   background: rgba(255,255,255,.045);
-  border: 1px solid rgba(255,255,255,.08);
-  transition: transform var(--speed) ease, border-color var(--speed) ease, background var(--speed) ease;
+  border: 1px solid rgba(232,200,116,.14);
+  transition: transform var(--speed) ease, border-color var(--speed) ease, background var(--speed) ease, box-shadow var(--speed) ease;
 }
 .rank-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(124,140,255,.25);
+  transform: translateY(-4px);
+  border-color: rgba(232,200,116,.4);
   background: rgba(255,255,255,.06);
+  box-shadow: 0 24px 70px rgba(232,200,116,.12), var(--shadow);
 }
 .rank-card::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top right, rgba(124,140,255,.16), transparent 35%);
+  background: radial-gradient(circle at top right, rgba(232,200,116,.14), transparent 35%);
   pointer-events: none;
 }
 .rank-top {
@@ -551,9 +663,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -.3px;
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -.2px;
 }
 .rank-emoji {
   width: 38px;
@@ -562,17 +675,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(124,140,255,.14);
-  border: 1px solid rgba(124,140,255,.2);
+  background: linear-gradient(135deg, rgba(232,200,116,.2), rgba(124,140,255,.14));
+  border: 1px solid rgba(232,200,116,.3);
   font-size: 18px;
 }
 .price {
   padding: 9px 12px;
   border-radius: 999px;
-  background: rgba(124,244,212,.10);
-  border: 1px solid rgba(124,244,212,.18);
-  color: #dffcf5;
+  background: rgba(232,200,116,.12);
+  border: 1px solid rgba(232,200,116,.28);
+  color: #f6ecc9;
   font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
 }
 .rank-card ul {
@@ -598,7 +712,7 @@
 .rank-note {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255,255,255,.08);
+  border-top: 1px solid rgba(232,200,116,.14);
   color: #dfe5ff;
   font-size: 13px;
   line-height: 1.6;
@@ -624,8 +738,8 @@
   border-radius: var(--radius);
   padding: 26px;
   background: var(--card);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
+  border: 1px solid rgba(232,200,116,.22);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(232,200,116,.06), 0 30px 90px rgba(232,200,116,.1);
   position: relative;
   animation: modalIn .22s ease;
 }
@@ -655,14 +769,16 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 20px;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
   margin-bottom: 4px;
   padding-right: 30px;
 }
 .modal-price {
-  color: #dffcf5;
+  color: #f6ecc9;
   font-size: 13px;
+  font-weight: 700;
   margin-bottom: 18px;
 }
 .modal-steps {
@@ -684,7 +800,7 @@
   width: 26px;
   height: 26px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: linear-gradient(135deg, var(--gold), var(--accent2));
   color: #05070d;
   font-weight: 800;
   font-size: 13px;
@@ -790,6 +906,7 @@
   </style>
 </head>
 <body>
+  <div id="scroll-progress"></div>
   <canvas id="bg-canvas"></canvas>
   <header class="topbar">
     <div class="container">
@@ -816,7 +933,7 @@
   <main>
     <section class="section hero" id="home">
       <div class="container hero-grid">
-        <article class="hero-card glass reveal">
+        <article class="hero-card glass reveal spotlight">
           <div class="eyebrow"><i></i> G1yrex's Hub • smooth premium layout</div>
           <h1><span class="gradient">A clean, modern hub</span> for G1yrex's community.</h1>
           <p class="subtext">
@@ -920,7 +1037,7 @@
           <div class="staff-toolbar">
             <div>
               <strong>Live Discord staff roster</strong>
-              <div class="small" id="staffStatus">Loading staff from Discord…</div>
+              <div class="small" id="staffStatus" aria-live="polite">Loading staff from Discord…</div>
             </div>
             <div class="tag"><span class="dot"></span> Discord source</div>
           </div>
@@ -952,15 +1069,15 @@
             </div>
             <div class="info-list">
               <div class="info-item">
-                <div class="icon">☕</div>
+                <div class="icon" aria-hidden="true">☕</div>
                 <div><strong>Java Edition</strong><div class="small">Connect using the IP above in Multiplayer.</div></div>
               </div>
               <div class="info-item">
-                <div class="icon">🟢</div>
+                <div class="icon" aria-hidden="true">🟢</div>
                 <div><strong>24/7 Uptime</strong><div class="small">Server stays online around the clock.</div></div>
               </div>
               <div class="info-item">
-                <div class="icon">🛡️</div>
+                <div class="icon" aria-hidden="true">🛡️</div>
                 <div><strong>Anti-Cheat Protected</strong><div class="small">Fair survival gameplay for everyone.</div></div>
               </div>
             </div>
@@ -987,15 +1104,15 @@
             <h3>Border &amp; World</h3>
             <div class="info-list">
               <div class="info-item">
-                <div class="icon">🗺️</div>
+                <div class="icon" aria-hidden="true">🗺️</div>
                 <div><strong>World Border</strong><div class="small">10,000 x 10,000 blocks</div></div>
               </div>
               <div class="info-item">
-                <div class="icon">🔒</div>
+                <div class="icon" aria-hidden="true">🔒</div>
                 <div><strong>The End</strong><div class="small">Closed</div></div>
               </div>
               <div class="info-item">
-                <div class="icon">🌍</div>
+                <div class="icon" aria-hidden="true">🌍</div>
                 <div><strong>World Type</strong><div class="small">Survival SMP</div></div>
               </div>
             </div>
@@ -1083,21 +1200,21 @@
 
             <div class="info-list">
               <div class="info-item">
-                <div class="icon">✦</div>
+                <div class="icon" aria-hidden="true">✦</div>
                 <div>
                   <strong>Premium Look</strong>
                   <div class="small">Dark glass design, soft gradients, and clean spacing.</div>
                 </div>
               </div>
               <div class="info-item">
-                <div class="icon">✧</div>
+                <div class="icon" aria-hidden="true">✧</div>
                 <div>
                   <strong>Live Staff System</strong>
                   <div class="small">Live staff system from Discord server.</div>
                 </div>
               </div>
               <div class="info-item">
-                <div class="icon">◌</div>
+                <div class="icon" aria-hidden="true">◌</div>
                 <div>
                   <strong>Ready for Updates</strong>
                   <div class="small">SMP and Ranks sections can be expanded later.</div>
@@ -1208,7 +1325,7 @@
       const palette = [
         { r: 124, g: 140, b: 255 },  // accent
         { r: 124, g: 244, b: 212 },  // accent2
-        { r: 255, g: 123, b: 149 },  // danger, used sparingly
+        { r: 232, g: 200, b: 116 },  // gold
         { r: 160, g: 150, b: 255 },
       ];
 
@@ -1287,8 +1404,10 @@
           ctx.fill();
         }
 
-        requestAnimationFrame(step);
+        rafId = requestAnimationFrame(step);
       }
+
+      let rafId = null;
 
       window.addEventListener('resize', () => {
         resize();
@@ -1299,8 +1418,17 @@
         targetMouseY = (e.clientY / height - 0.5) * 2;
       });
 
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          if (rafId) cancelAnimationFrame(rafId);
+          rafId = null;
+        } else if (!rafId) {
+          rafId = requestAnimationFrame(step);
+        }
+      });
+
       init();
-      requestAnimationFrame(step);
+      rafId = requestAnimationFrame(step);
     })();
 
     const copyIpBtn = document.getElementById('copyIpBtn');
@@ -1401,29 +1529,57 @@
 
     loadStaff();
 
+    document.querySelectorAll('.spotlight').forEach((el) => {
+      el.addEventListener('pointermove', (e) => {
+        const rect = el.getBoundingClientRect();
+        el.style.setProperty('--spot-x', `${e.clientX - rect.left}px`);
+        el.style.setProperty('--spot-y', `${e.clientY - rect.top}px`);
+      });
+    });
+
+    const scrollProgress = document.getElementById('scroll-progress');
+    function updateScrollProgress() {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
+      scrollProgress.style.width = pct + '%';
+    }
+    window.addEventListener('scroll', updateScrollProgress, { passive: true });
+    window.addEventListener('resize', updateScrollProgress);
+    updateScrollProgress();
+
     const rankModal = document.getElementById('rankModal');
     const rankModalTitle = document.getElementById('rankModalTitle');
     const rankModalPrice = document.getElementById('rankModalPrice');
     const rankModalClose = document.getElementById('rankModalClose');
     const rankModalCancel = document.getElementById('rankModalCancel');
+    const rankModalBox = rankModal.querySelector('.modal-box');
+    let lastFocusedEl = null;
 
-    function openRankModal(rankName, rankPrice) {
+    function getFocusableEls() {
+      return Array.from(rankModalBox.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    }
+
+    function openRankModal(rankName, rankPrice, triggerEl) {
+      lastFocusedEl = triggerEl || document.activeElement;
       rankModalTitle.textContent = rankName || 'Rank';
       rankModalPrice.textContent = rankPrice || '';
       rankModal.classList.add('open');
       rankModal.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
+      const focusables = getFocusableEls();
+      if (focusables.length) focusables[0].focus();
     }
 
     function closeRankModal() {
       rankModal.classList.remove('open');
       rankModal.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
+      if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') lastFocusedEl.focus();
     }
 
     document.querySelectorAll('.rank-card').forEach((card) => {
       card.addEventListener('click', () => {
-        openRankModal(card.dataset.rank, card.dataset.price);
+        openRankModal(card.dataset.rank, card.dataset.price, card);
       });
     });
 
@@ -1433,7 +1589,21 @@
       if (e.target === rankModal) closeRankModal();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && rankModal.classList.contains('open')) closeRankModal();
+      if (!rankModal.classList.contains('open')) return;
+      if (e.key === 'Escape') { closeRankModal(); return; }
+      if (e.key === 'Tab') {
+        const focusables = getFocusableEls();
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     });
 
     const observer = new IntersectionObserver((entries) => {
