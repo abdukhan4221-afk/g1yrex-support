@@ -1712,7 +1712,7 @@
   <header class="topbar">
     <div class="container">
       <nav class="nav glass">
-        <a class="brand" href="#home" aria-label="G1yrex's Hub home">
+        <a class="brand" href="/" data-section="home" aria-label="G1yrex's Hub home">
           <img src="/logo.png" alt="G1yrex logo">
           <div>
             <strong>G1yrex's Hub</strong>
@@ -1721,11 +1721,11 @@
         </a>
 
         <div class="navlinks" aria-label="Site navigation">
-          <a href="#home" class="active">Home</a>
-          <a href="#staff">Staff</a>
-          <a href="#smp">Smp</a>
-          <a href="#ranks">Ranks</a>
-          <a href="#about">About</a>
+          <a href="/" data-section="home" class="active">Home</a>
+          <a href="/staff" data-section="staff">Staff</a>
+          <a href="/smp" data-section="smp">Smp</a>
+          <a href="/ranks" data-section="ranks">Ranks</a>
+          <a href="/about" data-section="about">About</a>
           <button type="button" id="storeNavBtn" class="store-nav-btn">🛒 Store</button>
           <button type="button" id="soundToggleBtn" class="icon-toggle-btn" aria-label="Toggle sound">🔊</button>
           <button type="button" id="themeToggleBtn" class="icon-toggle-btn" aria-label="Toggle light theme">🌙</button>
@@ -1745,8 +1745,8 @@
           </p>
 
           <div class="hero-actions">
-            <a class="btn primary" href="#staff">View Staff</a>
-            <a class="btn secondary" href="#about">About G1yrex</a>
+            <a class="btn primary" href="/staff" data-section="staff">View Staff</a>
+            <a class="btn secondary" href="/about" data-section="about">About G1yrex</a>
           </div>
 
           <div class="mini-grid">
@@ -2832,40 +2832,75 @@
       }, delay);
     }
 
-    function showStorePage() {
-      appSections.forEach((s) => s.classList.add('is-hidden'));
-      storePage.classList.remove('is-hidden');
+    // ---- Clean-URL routing (/store, /staff, /smp, /ranks, /about) ----
+    const pathToSection = { '/': 'home', '/home': 'home', '/staff': 'staff', '/smp': 'smp', '/ranks': 'ranks', '/about': 'about' };
+
+    function setActiveNav(sectionId) {
       navLinks.forEach((l) => l.classList.remove('active'));
-      storeNavBtn.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      history.replaceState(null, '', '#store');
+      const activeLink = navLinks.find((l) => l.dataset.section === sectionId);
+      if (activeLink) activeLink.classList.add('active');
     }
 
-    function hideStorePage(targetSelector) {
-      storePage.classList.add('is-hidden');
-      appSections.forEach((s) => s.classList.remove('is-hidden'));
-      storeNavBtn.classList.remove('active');
-      const target = targetSelector ? document.querySelector(targetSelector) : null;
-      history.replaceState(null, '', target ? targetSelector : '#home');
+    function goToStore(opts = {}) {
+      const { push = true } = opts;
+      appSections.forEach((s) => s.classList.add('is-hidden'));
+      storePage.classList.remove('is-hidden');
+      setActiveNav(null);
+      storeNavBtn.classList.add('active');
+      window.scrollTo({ top: 0, behavior: push ? 'smooth' : 'auto' });
+      if (push) history.pushState({ path: '/store' }, '', '/store');
+    }
+
+    function goToSection(sectionId, path, opts = {}) {
+      const { push = true, smooth = true } = opts;
+      if (!storePage.classList.contains('is-hidden')) {
+        storePage.classList.add('is-hidden');
+        appSections.forEach((s) => s.classList.remove('is-hidden'));
+        storeNavBtn.classList.remove('active');
+      }
+      setActiveNav(sectionId);
+      const target = document.getElementById(sectionId);
+      if (push) history.pushState({ path }, '', path);
       if (target) {
-        target.scrollIntoView({ behavior: 'smooth' });
+        target.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
       } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
       }
     }
 
-    storeNavBtn.addEventListener('click', () => withLoader(showStorePage));
-    storeBackBtn.addEventListener('click', () => withLoader(() => hideStorePage()));
-    storeBackBtn2.addEventListener('click', () => withLoader(() => hideStorePage()));
-    navLinks.forEach((link) => {
+    function routeFromPath(pathname, opts = {}) {
+      if (pathname === '/store') {
+        goToStore({ push: false, ...opts });
+        return;
+      }
+      const sectionId = pathToSection[pathname] || 'home';
+      const cleanPath = pathToSection[pathname] ? pathname : '/';
+      goToSection(sectionId, cleanPath, { push: false, ...opts });
+    }
+
+    storeNavBtn.addEventListener('click', () => withLoader(() => goToStore()));
+    storeBackBtn.addEventListener('click', () => withLoader(() => goToSection('home', '/')));
+    storeBackBtn2.addEventListener('click', () => withLoader(() => goToSection('home', '/')));
+
+    document.querySelectorAll('a[data-section]').forEach((link) => {
       link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const sectionId = link.dataset.section;
+        const path = link.getAttribute('href');
         if (!storePage.classList.contains('is-hidden')) {
-          e.preventDefault();
-          const href = link.getAttribute('href');
-          withLoader(() => hideStorePage(href));
+          withLoader(() => goToSection(sectionId, path));
+        } else {
+          goToSection(sectionId, path);
         }
       });
     });
+
+    window.addEventListener('popstate', () => {
+      routeFromPath(location.pathname, { smooth: false });
+    });
+
+    // Route to whatever URL the visitor actually landed on (deep link / refresh / back-forward).
+    routeFromPath(location.pathname, { smooth: false });
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -2875,12 +2910,13 @@
 
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
 
-    const sectionMap = navLinks.map((link) => ({ link, section: document.querySelector(link.getAttribute('href')) })).filter(Boolean);
+    const sectionMap = navLinks.map((link) => ({ link, section: document.getElementById(link.dataset.section) })).filter((entry) => entry.section);
     const activeObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
+        if (!storePage.classList.contains('is-hidden')) return;
         navLinks.forEach((l) => l.classList.remove('active'));
-        const current = navLinks.find((l) => l.getAttribute('href') === `#${entry.target.id}`);
+        const current = navLinks.find((l) => l.dataset.section === entry.target.id);
         if (current) current.classList.add('active');
       });
     }, { threshold: 0.45 });
