@@ -2890,6 +2890,15 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, "index.html"));
 });
 
+// Clean URLs for each section of the single-page site. These just serve the
+// same index.html — the client-side router (see index.html) reads the path
+// on load and shows/scrolls to the right view. Needed so a direct visit or a
+// refresh on e.g. /store doesn't 404.
+const CLIENT_ROUTES = ["/store", "/staff", "/smp", "/ranks", "/about", "/home"];
+app.get(CLIENT_ROUTES, (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+});
+
 app.get("/api/staff", async (req, res) => {
   try {
     const guildId = req.query.guildId || getPrimaryGuildId();
