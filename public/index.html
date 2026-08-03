@@ -1587,6 +1587,15 @@
   margin: 0 0 12px;
 }
 .store-back-btn { padding: 9px 16px; font-size: 13px; }
+.asset-meta {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+.asset-actions { display: flex; }
+.asset-actions .btn { width: 100%; }
+.assets-back-btn { padding: 9px 16px; font-size: 13px; }
 .crate-price {
   display: inline-block;
   padding: 6px 11px;
@@ -1727,6 +1736,7 @@
           <a href="/ranks" data-section="ranks">Ranks</a>
           <a href="/about" data-section="about">About</a>
           <button type="button" id="storeNavBtn" class="store-nav-btn">🛒 Store</button>
+          <button type="button" id="assetsNavBtn" class="store-nav-btn">🗂️ Assets</button>
           <button type="button" id="soundToggleBtn" class="icon-toggle-btn" aria-label="Toggle sound">🔊</button>
           <button type="button" id="themeToggleBtn" class="icon-toggle-btn" aria-label="Toggle light theme">🌙</button>
           <button type="button" id="installAppBtn" class="icon-toggle-btn" aria-label="Install app" style="display:none;">📲</button>
@@ -2271,6 +2281,61 @@
         </div>
       </div>
     </section>
+<section class="section app-section is-hidden" id="assetsPage">
+  <div class="container">
+    <div class="section-head reveal">
+      <div>
+        <button type="button" class="btn secondary store-back-btn assets-back-btn" id="assetsBackBtn">← Back</button>
+        <h2 style="margin-top:14px;">🗂️ Assets</h2>
+        <p class="lead">Premium downloads for the community — mods, resource pack, and official skin, all ready to grab instantly.</p>
+      </div>
+      <div class="tag"><span class="dot"></span> Download Hub</div>
+    </div>
+
+    <div class="store-section-title">📁 Downloads</div>
+    <div class="crate-grid">
+      <article class="crate-card reveal">
+        <div class="crate-emoji">🧩</div>
+        <div class="crate-name">Mods Folder</div>
+        <p class="crate-desc">A curated mod pack for smoother gameplay, better visibility, and a clean setup. Keep it in sync with the server’s recommended client-side tweaks.</p>
+        <div class="asset-meta">Best for: performance, quality of life, and a premium gameplay feel.</div>
+        <div class="asset-actions">
+          <a class="btn primary" href="/assets/mods-folder.zip" download="mods-folder.zip">Download</a>
+        </div>
+      </article>
+
+      <article class="crate-card reveal">
+        <span class="popular-ribbon">⭐ Popular</span>
+        <div class="crate-emoji">🎨</div>
+        <div class="crate-name">Resource Pack</div>
+        <p class="crate-desc">A polished resource pack with a cleaner visual style, richer detail, and a luxe finish for the SMP experience.</p>
+        <div class="asset-meta">Best for: visuals, immersion, and a premium look.</div>
+        <div class="asset-actions">
+          <a class="btn primary" href="/assets/resource-pack.zip" download="resource-pack.zip">Download</a>
+        </div>
+      </article>
+
+      <article class="crate-card reveal">
+        <div class="crate-emoji">👤</div>
+        <div class="crate-name">Official Skin</div>
+        <p class="crate-desc">The official G1yrex skin file for a clean, recognizable identity across the server and socials.</p>
+        <div class="asset-meta">Best for: personal branding, creator identity, and matching the hub aesthetic.</div>
+        <div class="asset-actions">
+          <a class="btn primary" href="/assets/official-skin.png" download="official-skin.png">Download</a>
+        </div>
+      </article>
+    </div>
+
+    <div class="modal-warning" style="margin-top:22px;">
+      ⚠️ Upload the files into <code>/public/assets</code> with the exact names used in the download buttons so they stay accessible at <code>/assets</code>.
+    </div>
+
+    <div class="hero-actions" style="margin-bottom: 60px;">
+      <a class="btn primary" href="https://discord.com/invite/ZRqHVHWfZY" target="_blank" rel="noreferrer">Join Discord</a>
+      <button class="btn secondary" id="assetsBackBtn2" type="button">← Back to Home</button>
+    </div>
+  </div>
+</section>
   </main>
 
   <script>
@@ -2818,10 +2883,14 @@
     });
 
     const storeNavBtn = document.getElementById('storeNavBtn');
+    const assetsNavBtn = document.getElementById('assetsNavBtn');
     const storePage = document.getElementById('storePage');
+    const assetsPage = document.getElementById('assetsPage');
     const storeBackBtn = document.getElementById('storeBackBtn');
     const storeBackBtn2 = document.getElementById('storeBackBtn2');
-    const appSections = Array.from(document.querySelectorAll('.app-section:not(#storePage)'));
+    const assetsBackBtn = document.getElementById('assetsBackBtn');
+    const assetsBackBtn2 = document.getElementById('assetsBackBtn2');
+    const appSections = Array.from(document.querySelectorAll('.app-section:not(#storePage):not(#assetsPage)'));
     const viewLoader = document.getElementById('viewLoader');
 
     function withLoader(action, delay = 550) {
@@ -2832,7 +2901,7 @@
       }, delay);
     }
 
-    // ---- Clean-URL routing (/store, /staff, /smp, /ranks, /about) ----
+    // ---- Clean-URL routing (/store, /assets, /staff, /smp, /ranks, /about) ----
     const pathToSection = { '/': 'home', '/home': 'home', '/staff': 'staff', '/smp': 'smp', '/ranks': 'ranks', '/about': 'about' };
 
     function setActiveNav(sectionId) {
@@ -2844,19 +2913,35 @@
     function goToStore(opts = {}) {
       const { push = true } = opts;
       appSections.forEach((s) => s.classList.add('is-hidden'));
+      assetsPage.classList.add('is-hidden');
       storePage.classList.remove('is-hidden');
       setActiveNav(null);
       storeNavBtn.classList.add('active');
+      assetsNavBtn.classList.remove('active');
       window.scrollTo({ top: 0, behavior: push ? 'smooth' : 'auto' });
       if (push) history.pushState({ path: '/store' }, '', '/store');
     }
 
+    function goToAssets(opts = {}) {
+      const { push = true } = opts;
+      appSections.forEach((s) => s.classList.add('is-hidden'));
+      storePage.classList.add('is-hidden');
+      assetsPage.classList.remove('is-hidden');
+      setActiveNav(null);
+      assetsNavBtn.classList.add('active');
+      storeNavBtn.classList.remove('active');
+      window.scrollTo({ top: 0, behavior: push ? 'smooth' : 'auto' });
+      if (push) history.pushState({ path: '/assets' }, '', '/assets');
+    }
+
     function goToSection(sectionId, path, opts = {}) {
       const { push = true, smooth = true } = opts;
-      if (!storePage.classList.contains('is-hidden')) {
+      if (!storePage.classList.contains('is-hidden') || !assetsPage.classList.contains('is-hidden')) {
         storePage.classList.add('is-hidden');
+        assetsPage.classList.add('is-hidden');
         appSections.forEach((s) => s.classList.remove('is-hidden'));
         storeNavBtn.classList.remove('active');
+        assetsNavBtn.classList.remove('active');
       }
       setActiveNav(sectionId);
       const target = document.getElementById(sectionId);
@@ -2873,14 +2958,21 @@
         goToStore({ push: false, ...opts });
         return;
       }
+      if (pathname === '/assets') {
+        goToAssets({ push: false, ...opts });
+        return;
+      }
       const sectionId = pathToSection[pathname] || 'home';
       const cleanPath = pathToSection[pathname] ? pathname : '/';
       goToSection(sectionId, cleanPath, { push: false, ...opts });
     }
 
     storeNavBtn.addEventListener('click', () => withLoader(() => goToStore()));
+    assetsNavBtn.addEventListener('click', () => withLoader(() => goToAssets()));
     storeBackBtn.addEventListener('click', () => withLoader(() => goToSection('home', '/')));
     storeBackBtn2.addEventListener('click', () => withLoader(() => goToSection('home', '/')));
+    assetsBackBtn.addEventListener('click', () => withLoader(() => goToSection('home', '/')));
+    assetsBackBtn2.addEventListener('click', () => withLoader(() => goToSection('home', '/')));
 
     document.querySelectorAll('a[data-section]').forEach((link) => {
       link.addEventListener('click', (e) => {
