@@ -2880,9 +2880,13 @@ const app = express();
 app.disable("x-powered-by");
 app.use(express.json());
 const PUBLIC_DIR = path.join(__dirname, "public");
+const ASSETS_DIR = path.join(__dirname, "assets");
 
 app.use(express.static(PUBLIC_DIR, {
   extensions: ["html"],
+  maxAge: "5m",
+}));
+app.use("/assets", express.static(ASSETS_DIR, {
   maxAge: "5m",
 }));
 
