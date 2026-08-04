@@ -17,6 +17,7 @@ const {
   ButtonBuilder,
   ButtonStyle,
   AttachmentBuilder,
+  Role,
 } = require("discord.js");
 
 const TOKEN = process.env.TOKEN;
@@ -77,6 +78,7 @@ function ensureGuildConfig(guildId) {
       welcomeChannelId: null,
       restrictedWords: [],
       violations: { link: {}, word: {} },
+      moderationPerm: { roleIds: [], userIds: [] },
       staff: {
         notes: {},
         warnings: {},
@@ -122,8 +124,38 @@ function ensureGuildConfig(guildId) {
     if (!g.staff.modeOn) g.staff.modeOn = {};
   }
   if (!g.nextEventId) g.nextEventId = 1;
+  if (!g.moderationPerm || typeof g.moderationPerm !== "object") {
+    g.moderationPerm = { roleIds: [], userIds: [] };
+  } else {
+    if (!Array.isArray(g.moderationPerm.roleIds)) g.moderationPerm.roleIds = [];
+    if (!Array.isArray(g.moderationPerm.userIds)) g.moderationPerm.userIds = [];
+  }
 
   return g;
+}
+
+// ---- Custom moderation permission system ----
+// Lets admins grant specific roles/members access to moderation commands
+// (ban, kick, timeout, warn, warnings, clear, lock, unlock, slowmode)
+// without needing native Discord permissions.
+function hasModerationAccess(interaction, nativeFlag) {
+  const member = interaction.member;
+  if (!member) return false;
+  if (member.permissions?.has(PermissionFlagsBits.Administrator)) return true;
+  if (nativeFlag && member.permissions?.has(nativeFlag)) return true;
+
+  const cfg = ensureGuildConfig(interaction.guild.id);
+  const perm = cfg.moderationPerm;
+  if (perm.userIds.includes(member.id)) return true;
+  if (member.roles?.cache?.some((role) => perm.roleIds.includes(role.id))) return true;
+  return false;
+}
+
+function moderationDenyReply(interaction) {
+  return interaction.reply({
+    content: "❌ You don't have permission to use moderation commands.",
+    ephemeral: true,
+  });
 }
 
 // ---- Activity tracking (voice time + messages) ----
@@ -839,9 +871,46 @@ const commands = [
     ),
 
   new SlashCommandBuilder()
+    .setName("moderation")
+    .setDescription("Manage who can use moderation commands")
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+    .addSubcommandGroup((group) =>
+      group
+        .setName("perm")
+        .setDescription("Grant or revoke access to moderation commands")
+        .addSubcommand((sub) =>
+          sub
+            .setName("set")
+            .setDescription("Let a role or member use all moderation commands")
+            .addMentionableOption((opt) =>
+              opt
+                .setName("target")
+                .setDescription("Role or member")
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("remove")
+            .setDescription("Revoke a role or member's moderation access")
+            .addMentionableOption((opt) =>
+              opt
+                .setName("target")
+                .setDescription("Role or member")
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("list")
+            .setDescription("List every role and member with moderation access"),
+        ),
+    ),
+
+  new SlashCommandBuilder()
     .setName("ban")
     .setDescription("Ban a member")
-    .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
+    .setDefaultMemberPermissions(null)
     .addUserOption((opt) =>
       opt
         .setName("member")
@@ -986,14 +1055,14 @@ const commands = [
   new SlashCommandBuilder()
     .setName("kick")
     .setDescription("Kick a member")
-    .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+    .setDefaultMemberPermissions(null)
     .addUserOption((opt) => opt.setName("member").setDescription("Member to kick").setRequired(true))
     .addStringOption((opt) => opt.setName("reason").setDescription("Reason for the kick").setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("timeout")
     .setDescription("Timeout (mute) a member")
-    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+    .setDefaultMemberPermissions(null)
     .addUserOption((opt) => opt.setName("member").setDescription("Member to timeout").setRequired(true))
     .addStringOption((opt) =>
       opt.setName("duration").setDescription("Duration, e.g. 10m, 1h, 1d (max 28d)").setRequired(true),
@@ -1003,20 +1072,20 @@ const commands = [
   new SlashCommandBuilder()
     .setName("warn")
     .setDescription("Warn a member")
-    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+    .setDefaultMemberPermissions(null)
     .addUserOption((opt) => opt.setName("member").setDescription("Member to warn").setRequired(true))
     .addStringOption((opt) => opt.setName("reason").setDescription("Reason for the warning").setRequired(true)),
 
   new SlashCommandBuilder()
     .setName("warnings")
     .setDescription("Show a member's warnings")
-    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+    .setDefaultMemberPermissions(null)
     .addUserOption((opt) => opt.setName("member").setDescription("Member to check").setRequired(true)),
 
   new SlashCommandBuilder()
     .setName("clear")
     .setDescription("Bulk delete messages")
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+    .setDefaultMemberPermissions(null)
     .addIntegerOption((opt) =>
       opt.setName("amount").setDescription("Number of messages (1-100)").setMinValue(1).setMaxValue(100).setRequired(true),
     )
@@ -1025,20 +1094,20 @@ const commands = [
   new SlashCommandBuilder()
     .setName("lock")
     .setDescription("Lock a channel (deny @everyone Send Messages)")
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
+    .setDefaultMemberPermissions(null)
     .addChannelOption((opt) => opt.setName("channel").setDescription("Channel to lock").setRequired(false))
     .addStringOption((opt) => opt.setName("reason").setDescription("Reason for locking").setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("unlock")
     .setDescription("Unlock a previously locked channel")
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
+    .setDefaultMemberPermissions(null)
     .addChannelOption((opt) => opt.setName("channel").setDescription("Channel to unlock").setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("slowmode")
     .setDescription("Set a channel's slowmode")
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
+    .setDefaultMemberPermissions(null)
     .addIntegerOption((opt) =>
       opt.setName("seconds").setDescription("Seconds between messages (0 to disable)").setMinValue(0).setMaxValue(21600).setRequired(true),
     )
@@ -1939,7 +2008,58 @@ client.on("interactionCreate", async (interaction) => {
       }
     }
 
+    if (interaction.commandName === "moderation") {
+      const group = interaction.options.getSubcommandGroup();
+      const sub = interaction.options.getSubcommand();
+      const cfg = ensureGuildConfig(interaction.guild.id);
+      const perm = cfg.moderationPerm;
+
+      if (group === "perm" && sub === "set") {
+        const target = interaction.options.getMentionable("target", true);
+        const isRole = target instanceof Role;
+        const store = isRole ? perm.roleIds : perm.userIds;
+        if (!store.includes(target.id)) {
+          store.push(target.id);
+          saveConfig();
+        }
+        return interaction.reply({
+          content: `✅ ${isRole ? `<@&${target.id}>` : `<@${target.id}>`} can now use all moderation commands (ban, kick, timeout, warn, clear, lock, unlock, slowmode).`,
+          ephemeral: true,
+        });
+      }
+
+      if (group === "perm" && sub === "remove") {
+        const target = interaction.options.getMentionable("target", true);
+        const isRole = target instanceof Role;
+        const store = isRole ? perm.roleIds : perm.userIds;
+        const idx = store.indexOf(target.id);
+        if (idx !== -1) {
+          store.splice(idx, 1);
+          saveConfig();
+        }
+        return interaction.reply({
+          content: `✅ Removed moderation access for ${isRole ? `<@&${target.id}>` : `<@${target.id}>`}.`,
+          ephemeral: true,
+        });
+      }
+
+      if (group === "perm" && sub === "list") {
+        const roleMentions = perm.roleIds.map((id) => `<@&${id}>`);
+        const userMentions = perm.userIds.map((id) => `<@${id}>`);
+        const lines = [];
+        if (roleMentions.length) lines.push(`**Roles:** ${roleMentions.join(", ")}`);
+        if (userMentions.length) lines.push(`**Members:** ${userMentions.join(", ")}`);
+        if (!lines.length) lines.push("No roles or members have been granted moderation access yet.");
+        const embed = new EmbedBuilder()
+          .setColor(0x5865f2)
+          .setTitle("🛡️ Moderation Access")
+          .setDescription(lines.join("\n"));
+        return interaction.reply({ embeds: [embed], ephemeral: true });
+      }
+    }
+
     if (interaction.commandName === "ban") {
+      if (!hasModerationAccess(interaction, PermissionFlagsBits.BanMembers)) return moderationDenyReply(interaction);
       const member = interaction.options.getUser("member", true);
       const reason = interaction.options.getString("reason") || "No reason provided.";
 
@@ -2169,6 +2289,7 @@ client.on("interactionCreate", async (interaction) => {
 
     // ---------------- Moderation ----------------
     if (interaction.commandName === "kick") {
+      if (!hasModerationAccess(interaction, PermissionFlagsBits.KickMembers)) return moderationDenyReply(interaction);
       const target = interaction.options.getUser("member", true);
       const reason = interaction.options.getString("reason") || "No reason provided.";
       const member = await interaction.guild.members.fetch(target.id).catch(() => null);
@@ -2180,6 +2301,7 @@ client.on("interactionCreate", async (interaction) => {
     }
 
     if (interaction.commandName === "timeout") {
+      if (!hasModerationAccess(interaction, PermissionFlagsBits.ModerateMembers)) return moderationDenyReply(interaction);
       const target = interaction.options.getUser("member", true);
       const durationInput = interaction.options.getString("duration", true);
       const reason = interaction.options.getString("reason") || "No reason provided.";
@@ -2198,6 +2320,7 @@ client.on("interactionCreate", async (interaction) => {
     }
 
     if (interaction.commandName === "warn") {
+      if (!hasModerationAccess(interaction, PermissionFlagsBits.ModerateMembers)) return moderationDenyReply(interaction);
       const target = interaction.options.getUser("member", true);
       const reason = interaction.options.getString("reason", true);
       const entry = addWarning(interaction.guild.id, target.id, reason, interaction.user.tag);
@@ -2206,6 +2329,7 @@ client.on("interactionCreate", async (interaction) => {
     }
 
     if (interaction.commandName === "warnings") {
+      if (!hasModerationAccess(interaction, PermissionFlagsBits.ModerateMembers)) return moderationDenyReply(interaction);
       const target = interaction.options.getUser("member", true);
       const list = getWarnings(interaction.guild.id, target.id);
       const lines = list.length
@@ -2216,6 +2340,7 @@ client.on("interactionCreate", async (interaction) => {
     }
 
     if (interaction.commandName === "clear") {
+      if (!hasModerationAccess(interaction, PermissionFlagsBits.ManageMessages)) return moderationDenyReply(interaction);
       const amount = interaction.options.getInteger("amount", true);
       const targetUser = interaction.options.getUser("user");
       await interaction.deferReply({ ephemeral: true });
@@ -2230,6 +2355,7 @@ client.on("interactionCreate", async (interaction) => {
     }
 
     if (interaction.commandName === "lock" || interaction.commandName === "unlock") {
+      if (!hasModerationAccess(interaction, PermissionFlagsBits.ManageChannels)) return moderationDenyReply(interaction);
       const channel = interaction.options.getChannel("channel") || interaction.channel;
       const locking = interaction.commandName === "lock";
       const reason = interaction.options.getString("reason") || null;
@@ -2246,6 +2372,7 @@ client.on("interactionCreate", async (interaction) => {
     }
 
     if (interaction.commandName === "slowmode") {
+      if (!hasModerationAccess(interaction, PermissionFlagsBits.ManageChannels)) return moderationDenyReply(interaction);
       const seconds = interaction.options.getInteger("seconds", true);
       const channel = interaction.options.getChannel("channel") || interaction.channel;
       await channel.setRateLimitPerUser(seconds);
@@ -2768,7 +2895,7 @@ client.on("interactionCreate", async (interaction) => {
       const category = interaction.options.getString("category");
       const categories = {
         community: { title: "🎮 Community", commands: ["/level", "/rank", "/poll", "/leaderboard", "/profile"] },
-        moderation: { title: "🛡️ Moderation", commands: ["/ban", "/kick", "/timeout", "/warn", "/warnings", "/clear", "/lock", "/unlock", "/slowmode"] },
+        moderation: { title: "🛡️ Moderation", commands: ["/ban", "/kick", "/timeout", "/warn", "/warnings", "/clear", "/lock", "/unlock", "/slowmode", "/moderation perm set/remove/list"] },
         economy: { title: "💰 Economy", commands: ["/balance", "/daily", "/weekly", "/work", "/deposit", "/withdraw", "/pay", "/shop", "/inventory", "/leaderboard"] },
         fun: { title: "🎭 Fun", commands: ["/meme", "/8ball", "/coinflip", "/dice", "/rate", "/ship", "/afk"] },
         giveaways: { title: "🎉 Giveaways", commands: ["/gstart", "/greroll", "/gend", "/gpause", "/gresume"] },
@@ -2888,6 +3015,7 @@ app.use(express.static(PUBLIC_DIR, {
 }));
 app.use("/assets", express.static(ASSETS_DIR, {
   maxAge: "5m",
+  redirect: false,
 }));
 
 app.get("/", (req, res) => {
